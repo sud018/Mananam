@@ -342,7 +342,7 @@ function unitLabel(p){ return (p && tx(p,'unitLabel')) || tx(T,'unitLabel') || t
 function unitWord(p){ return (!p || single(p)) ? t('part') : unitLabel(p); }
 function unitTitle(p,u){ return single(p) ? tx(p,'name') : tx(p,'name')+', '+unitLabel(p)+' '+u.n; }
 function artFor(p,u){ return ART[p.id+'-'+u.n] || null; }
-var VERSION = 'v13';
+var VERSION = 'v14';
 function footer(){ return OWNER ? '<p class="foot">© '+OWNER.year+' '+esc(en() ? OWNER.en : OWNER.te)+' – '+t('copy')+' · '+VERSION+'</p>' : ''; }
 
 function show(which){
@@ -424,10 +424,11 @@ function renderContents(){
   var h = '<div class="hero"><h2>'+esc(tx(T,'title'))+'</h2><p>'+esc(tx(T,'subtitle') || '')+'</p></div>';
   var pos = load('pos.'+T.id, null), pp = pos && findPart(pos.part), pu = pp && findUnit(pp, pos.unit);
   if(pu && pu.items.length) h += '<button class="resume" id="resumeText">'+LAMP+'<span><b>'+t('cont')+'</b><small>'+esc(unitTitle(pp,pu))+', '+t('mantra')+' '+(pos.idx+1)+'</small></span></button>';
+  if(T.readAll) h += '<button class="readbtn" data-read="*">'+t('readFullPlain').replace('{p}', tx(T,'title'))+'</button>';
   T.parts.forEach(function(p){
     var n = p.units.reduce(function(a,u){ return a+u.items.length; },0);
     h += '<div class="part-h"><h3>'+esc(tx(p,'name'))+'</h3><span>'+(single(p)?'':t('unitsOf').replace('{n}',p.units.length).replace('{u}',unitLabel(p))+', ')+n+' '+(tx(T,'itemsWord') || t('mantras'))+'</span></div>';
-    if(!single(p)) h += '<button class="readbtn" data-read="'+esc(p.id)+'">'+t(p.units.some(function(u){ return u.items.some(function(it){ return it.svara; }); }) ? 'readFull' : 'readFullPlain').replace('{p}', tx(p,'name'))+'</button>';
+    if(!single(p) && !T.readAll) h += '<button class="readbtn" data-read=""'+esc(p.id)+'">'+t(p.units.some(function(u){ return u.items.some(function(it){ return it.svara; }); }) ? 'readFull' : 'readFullPlain').replace('{p}', tx(p,'name'))+'</button>';
     if(myChant(p.id, 'full')) h += '<button class="chantbtn" data-my="'+esc(p.id)+'">'+t('myFull')+'</button>';
     else if(chantFor(p.id)) h += '<button class="chantbtn" data-chant="'+esc(p.id)+'">'+t('chantFull')+'</button>';
     p.units.forEach(function(u){
@@ -885,6 +886,7 @@ $('ytClose').onclick = function(){
 /* ---------- full text: only the mantras, with svaras ---------- */
 var fullPid = null;
 function renderFull(pid){
+  if(pid === '*') return renderFullAll();
   fullPid = pid; var p = findPart(pid);
   $('title').textContent = tx(p,'name');
   var h = '<div class="fullh"><h2>'+esc(T.listMode ? tx(T,'title') : tx(p,'name'))+'</h2></div>';
@@ -910,6 +912,28 @@ function renderFull(pid){
   $('fullTop').onclick = function(){ window.scrollTo({top:0, behavior:'smooth'}); };
   Array.prototype.forEach.call($('full').querySelectorAll('.fullv'), function(el){ el.onclick = function(){
     openUnit(pid, +el.getAttribute('data-u'), +el.getAttribute('data-i'));
+  }; });
+}
+
+function renderFullAll(){
+  fullPid = '*';
+  $('title').textContent = tx(T,'title');
+  var h = '<div class="fullh"><h2>'+esc(tx(T,'title'))+'</h2></div><p class="foot" style="margin:4px 0 0">'+t('fullTap')+'</p>';
+  T.parts.forEach(function(p){
+    h += '<div class="fullh" style="margin-top:30px"><h2 style="font-size:1.3rem">'+esc(tx(p,'name'))+'</h2></div>';
+    p.units.forEach(function(u){
+      h += '<div class="fullu">'+esc(u.name || (unitLabel(p)+' '+u.n))+'</div>';
+      u.items.forEach(function(it, i){
+        var txt = S.svara && it.svara ? it.svara : it.text;
+        h += '<p class="fullv" data-p="'+esc(p.id)+'" data-u="'+u.n+'" data-i="'+i+'">'+esc(txt)+'<i>'+it.n+'</i></p>';
+      });
+    });
+  });
+  h += '<div class="fullbar"><button id="fullTop">'+t('top')+'</button></div>' + footer();
+  $('full').innerHTML = h; show('full');
+  $('fullTop').onclick = function(){ window.scrollTo({top:0, behavior:'smooth'}); };
+  Array.prototype.forEach.call($('full').querySelectorAll('.fullv'), function(el){ el.onclick = function(){
+    openUnit(el.getAttribute('data-p'), +el.getAttribute('data-u'), +el.getAttribute('data-i'));
   }; });
 }
 

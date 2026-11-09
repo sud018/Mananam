@@ -12,6 +12,7 @@
  "itemLabelEn": "Shloka",
  "nameLines": true,
  "noAudio": true,
+ "readAll": true,
  "itemsWord": "శ్లోకాలు",
  "itemsWordEn": "shlokas",
  "parts": [
