@@ -14,11 +14,13 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+Telugu:wght@400;600&family=Noto+Sans+Telugu:wght@400;500&display=swap">
 <title>మననం</title>
 <style>
+@font-face{font-family:"Mananam Mantra";src:url("fonts/TiroTelugu-mantra.woff2") format("woff2");font-display:swap}
 :root{
   --ash:#ebe9e5; --ash-2:#f6f5f2; --indigo:#1e2347; --ink:#1a1c33;
   --kumkum:#b3122e; --turmeric:#d99a1e; --bilva:#2c5c4d; --muted:#6b6a72; --rule:#d3d0ca;
   --art-line:#1e2347; --art-accent:#d99a1e; --art-soft:#d9d4ea; --art-bg:#f6f5f2;
   --scale:1;
+  --mantra:"Mananam Mantra","Noto Serif Telugu","Telugu Sangam MN",serif;
   --serif:"Telugu Sangam MN","Noto Serif Telugu","Gautami",serif;
   --sans:"Kohinoor Telugu","Noto Sans Telugu","Telugu MN",system-ui,sans-serif;
 }
@@ -94,10 +96,12 @@ input[type=range]{width:100%;accent-color:var(--kumkum);height:32px;margin:2px 0
 .essence h4{margin:0 0 2px;font:600 .95rem var(--serif);color:var(--turmeric)}
 .opening{text-align:center;color:var(--muted);font:400 calc(1rem*var(--scale))/1.6 var(--serif);margin-bottom:6px}
 .vnum{text-align:center;font:600 1rem var(--serif);color:var(--kumkum);margin:8px 0 4px}
-.verse{white-space:pre-line;text-align:center;font:400 calc(1.5rem*var(--scale))/1.85 var(--serif);color:var(--indigo);margin:0 0 6px;border-radius:12px;padding:2px 4px;transition:background .2s}
+.verse{white-space:pre-line;text-align:center;font:400 calc(1.38rem*var(--scale))/2.05 var(--mantra);color:var(--indigo);margin:0 0 6px;border-radius:12px;padding:2px 4px;transition:background .2s}
 body.dark .verse{color:var(--ink)}
 .meaning{font-size:calc(1.14rem*var(--scale));line-height:1.95;color:var(--bilva);border-radius:12px;padding:2px 4px;transition:background .2s}
 .speaking{background:rgba(217,154,30,.16)}
+.legend{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin:2px 0 4px}
+.legend b{font:400 1.1rem var(--mantra);color:var(--kumkum)}
 .derived{display:block;font-size:.85rem;color:var(--muted);margin-top:8px}
 .reveal{display:block;width:100%;padding:18px;border:1.5px dashed var(--kumkum);border-radius:14px;color:var(--kumkum);font:600 1.05rem var(--serif)}
 .sumhead{text-align:center;font:600 1.25rem var(--serif);color:var(--kumkum);margin:4px 0 0}
@@ -171,8 +175,9 @@ body.dark .done{background:#2a2e5c}
     <div class="status" id="voiceStatus"></div>
     <div class="small-play" id="recRow">
       <button id="btnRec"></button>
-      <button id="btnRecDel" class="hidden"></button>
+      <button id="btnRecA"></button>
     </div>
+    <div class="chips" id="recDels" style="margin-top:8px"></div>
     <div class="status" id="recStatus"></div>
   </div>
   <div class="nav">
@@ -204,7 +209,7 @@ window.MANANAM_ART = window.MANANAM_ART || {};
 var $ = function(id){ return document.getElementById(id); };
 function load(k, def){ try{ var v = localStorage.getItem('mananam.'+k); return v ? JSON.parse(v) : def; }catch(e){ return def; } }
 function save(k, v){ try{ localStorage.setItem('mananam.'+k, JSON.stringify(v)); }catch(e){} }
-var DEF = {scale:1, dark:false, rate:1, hide:false, art:true, lang:'te', mode:'both', mantraVoice:'auto', meaningVoice:'auto'};
+var DEF = {scale:1, dark:false, rate:1, hide:false, art:true, lang:'te', mode:'both', mantraVoice:'auto', meaningVoice:'auto', svara:true};
 var S = Object.assign({}, DEF, load('settings', {}));
 var LAST = load('last', null), MARKS = load('marks', {}), NOTES = load('notes', {}), READ = load('read', {});
 var T = null, ART = {}, cur = {part:null, unit:null, idx:0}, revealed = false, screen = 'library';
@@ -225,8 +230,12 @@ var STR = {
    noTe:'తెలుగు వాయిస్ లేదు. iPhone: Settings → Accessibility → Spoken Content → Voices → Telugu. Windows లో Microsoft Edge బ్రౌజర్ వాడండి.',
    noVoice:'ఈ బ్రౌజర్‌లో వినిపించే సౌకర్యం లేదు.', done:'సరే', copy:'వ్యక్తిగత ప్రతి', listT:'మంత్రాల జాబితా', jump:'మంత్రానికి వెళ్ళండి',
    unitsOf:'{n} {u}లు',
-   rec:'🎙 నా పఠనం రికార్డ్ చేయండి', recStop:'■ రికార్డింగ్ ఆపండి', recAgain:'🎙 మళ్ళీ రికార్డ్ చేయండి', recDel:'🗑 తొలగించండి',
-   recNow:'రికార్డ్ అవుతోంది… మంత్రం పఠించి, ఆపండి నొక్కండి.', recHas:'ఈ మంత్రానికి మీ స్వంత పఠనం వినిపిస్తుంది.',
+   anu:'అనుదాత్తం (స్వరం తగ్గించి)', svar:'స్వరితం (ఎత్తి)', dsvar:'దీర్ఘ స్వరితం (ఎత్తి, సాగదీసి)',
+   svaraSet:'మంత్రాలలో స్వర గుర్తులు',
+   svaraHelp:'కింద గీత = అనుదాత్తం, పైన గీత = స్వరితం, పైన రెండు గీతలు = దీర్ఘ స్వరితం. గుర్తు లేని అక్షరాలు ఉదాత్తం / ప్రచయం. స్వర పాఠం తైత్తిరీయ సంహిత ప్రకారం.',
+   rec:'🎙 మంత్రం రికార్డ్', recA:'🎙 అర్థం రికార్డ్', recStop:'■ రికార్డింగ్ ఆపండి', recAgain:'🎙 మంత్రం మళ్ళీ', recAgainA:'🎙 అర్థం మళ్ళీ',
+   recDel:'🗑 మంత్రం రికార్డింగ్ తొలగించు', recDelA:'🗑 అర్థం రికార్డింగ్ తొలగించు',
+   recNow:'రికార్డ్ అవుతోంది… పఠించి, ఆపండి నొక్కండి.', recHas:'ఇక్కడ మీ స్వంత గొంతు వినిపిస్తుంది.',
    recNo:'ఈ బ్రౌజర్‌లో రికార్డింగ్ సౌకర్యం లేదు.', recDenied:'మైక్రోఫోన్ అనుమతి ఇవ్వలేదు.', missing:'ఈ గ్రంథం తెరవలేకపోయాము. ఈ ఫైల్ ఉందో చూడండి: '},
  en:{app:'Mananam', tagline:'Recite the mantra, learn its meaning, feel what it says.',
    cont:'Continue', fromLeft:'from where you stopped', soon:'Coming soon', mantras:'mantras', mantra:'Mantra',
@@ -242,8 +251,12 @@ var STR = {
    noTe:'No Telugu voice found. iPhone: Settings → Accessibility → Spoken Content → Voices → Telugu. On Windows, use the Microsoft Edge browser.',
    noVoice:'This browser cannot read aloud.', done:'Done', copy:'Personal copy', listT:'All mantras', jump:'Go to mantra',
    unitsOf:'{n} {u}s',
-   rec:'🎙 Record my chanting', recStop:'■ Stop recording', recAgain:'🎙 Record again', recDel:'🗑 Delete',
-   recNow:'Recording… chant the mantra, then tap Stop.', recHas:'Your own chanting plays for this mantra.',
+   anu:'anudātta (lower)', svar:'svarita (raise)', dsvar:'dīrgha svarita (raise, hold)',
+   svaraSet:'Svara marks in mantras',
+   svaraHelp:'Line below = anudātta, line above = svarita, double line above = dīrgha svarita. Unmarked syllables are udātta / pracaya. Svara text follows the Taittirīya Saṃhitā.',
+   rec:'🎙 Record mantra', recA:'🎙 Record meaning', recStop:'■ Stop recording', recAgain:'🎙 Re-record mantra', recAgainA:'🎙 Re-record meaning',
+   recDel:'🗑 Delete mantra recording', recDelA:'🗑 Delete meaning recording',
+   recNow:'Recording… speak, then tap Stop.', recHas:'Your own voice plays here.',
    recNo:'This browser cannot record.', recDenied:'Microphone permission was not given.', missing:'Could not open this text. Check that this file exists: '}
 };
 function t(k, u){ var s = (STR[S.lang] || STR.te)[k] || STR.te[k] || k; return u === undefined ? s : s.replace('{u}', u); }
@@ -382,7 +395,8 @@ function renderStep(){
   $('topArea').innerHTML = top;
   if(item.kind === 'v'){
     $('verseArea').innerHTML = (cur.idx === 0 && u.opening ? '<div class="opening">'+esc(u.opening)+'</div>' : '')+
-      '<div class="vnum">'+item.v.n+'</div><div class="verse" id="verseText">'+esc(item.v.text)+'</div>';
+      '<div class="vnum">'+item.v.n+'</div><div class="verse" id="verseText">'+esc(S.svara && item.v.svara ? item.v.svara : item.v.text)+'</div>'+
+      (S.svara && item.v.svara && cur.idx === 0 ? '<div class="legend"><span><b>క॒</b> '+t('anu')+'</span><span><b>క॑</b> '+t('svar')+'</span><span><b>క᳚</b> '+t('dsvar')+'</span></div>' : '');
   }else{
     $('verseArea').innerHTML = '<div class="sumhead">'+t('summary')+'</div><div class="opening">'+t('wholeOf', w)+'</div>';
   }
@@ -492,13 +506,14 @@ function delRec(k){
   idb(function(db){ if(!db) return; db.transaction('rec','readwrite').objectStore('rec').delete(k); });
   if(RECS[k]) URL.revokeObjectURL(RECS[k]); delete RECS[k];
 }
-var recorder = null, recChunks = [];
+var recorder = null, recChunks = [], recKind = null;
 function canRecord(){ return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder); }
-function toggleRecord(){
+function toggleRecord(kind){
   if(recorder){ recorder.stop(); return; }
   if(!canRecord()){ $('recStatus').textContent = t('recNo'); return; }
   stopSpeech();
-  var k = key();
+  recKind = kind;
+  var k = kind === 'meaning' ? key()+'-a' : key();
   navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
     recChunks = [];
     var type = ['audio/mp4','audio/webm;codecs=opus','audio/webm'].filter(function(m){ return MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m); })[0];
@@ -507,19 +522,29 @@ function toggleRecord(){
     recorder.onstop = function(){
       stream.getTracks().forEach(function(tr){ tr.stop(); });
       if(recChunks.length) saveRec(k, new Blob(recChunks, {type: recorder.mimeType || 'audio/mp4'}));
-      recorder = null; recUI();
+      recorder = null; recKind = null; recUI();
     };
     recorder.start(); recUI();
   }).catch(function(){ $('recStatus').textContent = t('recDenied'); });
 }
 function recUI(){
-  var it = cur.unit && steps(cur.unit)[cur.idx], isV = it && it.kind === 'v', has = isV && !!recURL(key());
-  $('recRow').classList.toggle('hidden', !isV);
-  $('btnRec').textContent = recorder ? t('recStop') : (has ? t('recAgain') : t('rec'));
-  $('btnRec').classList.toggle('on', !!recorder);
-  $('btnRecDel').classList.toggle('hidden', !has || !!recorder);
-  $('btnRecDel').textContent = t('recDel');
-  $('recStatus').textContent = recorder ? t('recNow') : (has ? t('recHas') : '');
+  var it = cur.unit && steps(cur.unit)[cur.idx], isV = it && it.kind === 'v';
+  var hasM = isV && !!recURL(key()), hasA = !!(it && recURL(key()+'-a'));
+  $('btnRec').classList.toggle('hidden', !isV);
+  $('btnRec').textContent = recorder && recKind === 'mantra' ? t('recStop') : (hasM ? t('recAgain') : t('rec'));
+  $('btnRec').classList.toggle('on', recKind === 'mantra');
+  $('btnRec').disabled = !!recorder && recKind !== 'mantra';
+  $('btnRecA').textContent = recorder && recKind === 'meaning' ? t('recStop') : (hasA ? t('recAgainA') : t('recA'));
+  $('btnRecA').classList.toggle('on', recKind === 'meaning');
+  $('btnRecA').disabled = !!recorder && recKind !== 'meaning';
+  var dels = [];
+  if(hasM && !recorder) dels.push('<button class="chip" data-del="m">'+t('recDel')+'</button>');
+  if(hasA && !recorder) dels.push('<button class="chip" data-del="a">'+t('recDelA')+'</button>');
+  $('recDels').innerHTML = dels.join('');
+  Array.prototype.forEach.call($('recDels').querySelectorAll('[data-del]'), function(b){
+    b.onclick = function(){ delRec(b.getAttribute('data-del') === 'a' ? key()+'-a' : key()); recUI(); };
+  });
+  $('recStatus').textContent = recorder ? t('recNow') : ((hasM || hasA) ? t('recHas') : '');
 }
 
 /* ---------- playback ---------- */
@@ -547,7 +572,8 @@ function audioIndex(){ return (window.MANANAM_AUDIO || {})[T && T.id] || null; }
 function stepKey(){ return cur.part.id+'-'+cur.unit.n+'-'+(cur.idx+1); }
 function fileFor(kind){
   var ai = audioIndex(), k = stepKey()+'-'+(kind === 'mantra' ? 'm' : 'a');
-  return ai && ai.files && ai.files[k] ? 'audio/'+T.id+'/'+k+'.mp3' : null;
+  var ext = ai && ai.files && ai.files[k];
+  return ext ? 'audio/'+T.id+'/'+k+'.'+(ext === 1 ? 'mp3' : ext) : null;
 }
 function playSrc(src, my, next){
   AUD.onended = function(){ if(my === token) setTimeout(next, 250); };
@@ -576,7 +602,7 @@ function sayQueue(list, my, done){   // list of {kind, src} or {kind, text}
 function currentParts(mode){
   var it = steps(cur.unit)[cur.idx], list = [];
   var add = function(kind, text){
-    var src = kind === 'mantra' ? (recURL(key()) || fileFor('mantra')) : fileFor('meaning');
+    var src = kind === 'mantra' ? (recURL(key()) || fileFor('mantra')) : (recURL(key()+'-a') || fileFor('meaning'));
     if(src) list.push({kind:kind, src:src});
     else chunks(text).forEach(function(c){ list.push({text:c, kind:kind}); });
   };
@@ -641,6 +667,7 @@ function openSettings(){
     '<div class="set"><span>'+t('lang')+'</span>'+seg('lang', [['te','తెలుగు'],['en','English']], S.lang)+'</div>'+
     '<div class="set"><span>'+t('size')+'</span>'+seg('scale', [[0.9,'అ−'],[1,'అ'],[1.2,'అ+'],[1.4,'అ++']], S.scale)+'</div>'+
     '<div class="set"><span>'+t('night')+'</span>'+seg('dark', [[false,t('off')],[true,t('on')]], S.dark)+'</div>'+
+    '<div class="set"><span>'+t('svaraSet')+'</span>'+seg('svara', [[true,t('on')],[false,t('off')]], S.svara)+'<small>'+t('svaraHelp')+'</small></div>'+
     '<div class="set"><span>'+t('mode')+'</span>'+seg('mode', [['both',t('both')],['mOnly',t('mOnly')],['aOnly',t('aOnly')]], S.mode)+'</div>'+
     '<div class="set"><span>'+t('speed')+'</span>'+seg('rate', [[0.7,'0.7×'],[0.85,'0.85×'],[1,'1×'],[1.15,'1.15×']], S.rate)+'</div>'+
     '<div class="set"><label>'+t('mVoice')+'</label>'+voiceSelect('mantraVoice', indic, S.mantraVoice)+
@@ -652,7 +679,7 @@ function openSettings(){
   Array.prototype.forEach.call($('panel').querySelectorAll('.seg button'), function(b){
     b.onclick = function(){
       var name = b.parentNode.getAttribute('data-set'), v = b.getAttribute('data-v');
-      S[name] = (name === 'scale' || name === 'rate') ? +v : (name === 'dark' ? v === 'true' : v);
+      S[name] = (name === 'scale' || name === 'rate') ? +v : ((name === 'dark' || name === 'svara') ? v === 'true' : v);
       applySettings(); rerender(); openSettings();
     };
   });
@@ -671,8 +698,8 @@ $('slider').oninput = function(){ goTo(+this.value-1); };
 $('btnAll').onclick = playAll;
 $('btnMantra').onclick = function(){ playOne('mantra'); };
 $('btnMeaning').onclick = function(){ playOne('meaning'); };
-$('btnRec').onclick = function(){ toggleRecord(); };
-$('btnRecDel').onclick = function(){ delRec(key()); recUI(); };
+$('btnRec').onclick = function(){ toggleRecord('mantra'); };
+$('btnRecA').onclick = function(){ toggleRecord('meaning'); };
 $('btnHide').onclick = function(){ S.hide = !S.hide; applySettings(); staticLabels(); renderStep(); };
 $('btnArt').onclick = function(){ S.art = !S.art; applySettings(); staticLabels(); renderStep(); };
 $('btnList').onclick = openList;

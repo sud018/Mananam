@@ -45,8 +45,12 @@ Phone voices for Telugu and Sanskrit sound robotic. To get natural Microsoft neu
 3. Upload: `git add audio` → `git commit -m "Add audio"` → `git push`.
 The app plays these files automatically; where a file is missing it uses the phone's voice.
 
+## Most natural Telugu meanings
+`python tools\make_audio.py --only a --engine sarvam --key YOUR_KEY --speaker kavitha --redo`
+uses Sarvam Bulbul v3 (Indian-made, trained on Indian speech). Get a key at dashboard.sarvam.ai. Try a few speakers on sarvam.ai first.
+
 ## Your own chanting
-In any mantra, tap **🎙 Record my chanting**, chant, tap Stop. From then on that mantra plays in your voice (in single play and in whole-anuvakam play). Recordings stay on that phone only.
+In any mantra, tap **🎙 Record mantra** (or **🎙 Record meaning**), speak, tap Stop. From then on it plays in your voice, also in whole-anuvakam play. Recordings stay on that phone only.
 
 ## Language of buttons
 ⚙ Settings → Button language: తెలుగు or English. The mantras and meanings stay in Telugu.

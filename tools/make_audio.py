@@ -7,15 +7,17 @@ plays on every device, offline.
     python tools/make_audio.py --male       # male Telugu voice for meanings
     python tools/make_audio.py --only a     # meanings only   (--only m = mantras only)
 
-Needs:  pip install edge-tts
+  Most natural Telugu meanings (Sarvam "Bulbul", trained on Indian speech; needs a free/paid API key
+  from https://dashboard.sarvam.ai):
+    pip install sarvamai
+    python tools/make_audio.py --only a --engine sarvam --key YOUR_KEY --speaker kavitha --redo
+
+Needs:  pip install edge-tts   (for the default engine)
 Files already made are skipped, so you can stop and run it again any time.
 """
 import argparse, asyncio, json, os, re, sys, time
 
-try:
-    import edge_tts
-except ImportError:
-    sys.exit("Please run first:  pip install edge-tts")
+edge_tts = None
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -67,10 +69,38 @@ def jobs_for(text, only):
     return jobs
 
 
-async def make_one(job, outdir, voices, sem, stats):
+def split_text(text, limit=1500):
+    parts, buf = [], ""
+    for piece in re.split(r"(?<=[.!?।॥])\s+", text):
+        if len(buf) + len(piece) + 1 > limit and buf:
+            parts.append(buf); buf = piece
+        else:
+            buf = (buf + " " + piece).strip()
+    if buf: parts.append(buf)
+    return parts
+
+
+def sarvam_to_file(client, text, path, speaker, pace):
+    """Sarvam Bulbul v3 -> WAV (pieces joined)."""
+    import base64, io, wave
+    frames, params = [], None
+    for piece in split_text(text):
+        r = client.text_to_speech.convert(text=piece, target_language_code="te-IN", model="bulbul:v3",
+                                          speaker=speaker, pace=pace)
+        b64 = (getattr(r, "audios", None) or r["audios"])[0]
+        w = wave.open(io.BytesIO(base64.b64decode(b64)))
+        params = params or w.getparams()
+        frames.append(w.readframes(w.getnframes()))
+    out = wave.open(path, "wb"); out.setparams(params)
+    for f in frames: out.writeframes(f)
+    out.close()
+
+
+async def make_one(job, outdir, voices, sem, stats, engine="edge", client=None, speaker=None, redo=False):
     key, text, kind = job
-    path = os.path.join(outdir, key + ".mp3")
-    if os.path.exists(path) and os.path.getsize(path) > 1000:
+    ext = "wav" if (engine == "sarvam" and kind == "meaning") else "mp3"
+    path = os.path.join(outdir, key + "." + ext)
+    if not redo and os.path.exists(path) and os.path.getsize(path) > 1000:
         stats["skip"] += 1
         return
     voice = voices[kind]
@@ -79,8 +109,13 @@ async def make_one(job, outdir, voices, sem, stats):
         for attempt in range(4):
             try:
                 tmp = path + ".part"
-                await edge_tts.Communicate(text, voice, rate=rate).save(tmp)
+                if ext == "wav":
+                    await asyncio.to_thread(sarvam_to_file, client, text, tmp, speaker, 0.95)
+                else:
+                    await edge_tts.Communicate(text, voice, rate=rate).save(tmp)
                 os.replace(tmp, path)
+                other = path[:-3] + ("mp3" if ext == "wav" else "wav")
+                if os.path.exists(other): os.remove(other)
                 stats["made"] += 1
                 done = stats["made"] + stats["skip"]
                 print("  %4d / %d  %s" % (done, stats["total"], key), flush=True)
@@ -92,10 +127,13 @@ async def make_one(job, outdir, voices, sem, stats):
 
 
 def write_index(text_id, outdir, voices):
-    files = sorted(f[:-4] for f in os.listdir(outdir) if f.endswith(".mp3") and os.path.getsize(os.path.join(outdir, f)) > 1000)
+    files = {}
+    for f in sorted(os.listdir(outdir)):
+        if (f.endswith(".mp3") or f.endswith(".wav")) and os.path.getsize(os.path.join(outdir, f)) > 1000:
+            files[f[:-4]] = 1 if f.endswith(".mp3") else "wav"
     js = ("// Made by tools/make_audio.py – lists the natural-voice MP3 files the app can play.\n"
           "(window.MANANAM_AUDIO = window.MANANAM_AUDIO || {})['%s'] = %s;\n") % (
-        text_id, json.dumps({"voices": voices, "files": {k: 1 for k in files}}, ensure_ascii=False, indent=0))
+        text_id, json.dumps({"voices": voices, "files": files}, ensure_ascii=False, indent=0))
     open(os.path.join(outdir, "index.js"), "w", encoding="utf-8").write(js)
     return len(files)
 
@@ -106,7 +144,27 @@ async def main():
     ap.add_argument("--male", action="store_true", help="male Telugu voice for meanings")
     ap.add_argument("--only", choices=["m", "a"], help="m = mantras only, a = meanings only")
     ap.add_argument("--parallel", type=int, default=4)
+    ap.add_argument("--engine", choices=["edge", "sarvam"], default="edge", help="sarvam = most natural Telugu meanings")
+    ap.add_argument("--key", help="Sarvam API key (or set SARVAM_API_KEY)")
+    ap.add_argument("--speaker", default="kavitha", help="Sarvam voice name")
+    ap.add_argument("--redo", action="store_true", help="make files again even if they exist")
     a = ap.parse_args()
+    global edge_tts
+    client = None
+    if a.engine == "sarvam":
+        try:
+            from sarvamai import SarvamAI
+        except ImportError:
+            sys.exit("Please run first:  pip install sarvamai")
+        key = a.key or os.environ.get("SARVAM_API_KEY")
+        if not key: sys.exit("Give your Sarvam key with --key or SARVAM_API_KEY")
+        client = SarvamAI(api_subscription_key=key)
+    if a.engine == "edge" or a.only != "a":
+        try:
+            import edge_tts as _e
+            edge_tts = _e
+        except ImportError:
+            sys.exit("Please run first:  pip install edge-tts")
 
     voices = {"mantra": VOICES["mantra"], "meaning": VOICES["meaning_m" if a.male else "meaning_f"]}
     text = load_text(a.text)
@@ -118,7 +176,9 @@ async def main():
     print("Voices: mantras = %s, meanings = %s\n" % (voices["mantra"], voices["meaning"]))
     t0 = time.time()
     sem = asyncio.Semaphore(a.parallel)
-    await asyncio.gather(*(make_one(j, outdir, voices, sem, stats) for j in jobs))
+    if a.engine == "sarvam":
+        voices["meaning"] = "sarvam bulbul:v3 / " + a.speaker
+    await asyncio.gather(*(make_one(j, outdir, voices, sem, stats, a.engine, client, a.speaker, a.redo) for j in jobs))
     n = write_index(a.text, outdir, voices)
     print("\nDone in %d min. New: %d, already there: %d, failed: %d. The app now knows %d files."
           % ((time.time() - t0) // 60, stats["made"], stats["skip"], len(stats["fail"]), n))
