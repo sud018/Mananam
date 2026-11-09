@@ -18,9 +18,10 @@ window.MANANAM_LIBRARY = [
     id: "vishnu-sahasranamam",
     title: "శ్రీ విష్ణు సహస్రనామం",
     titleEn: "Sri Vishnu Sahasranamam",
-    subtitle: "",
-    icon: "॥",
-    ready: false
+    subtitle: "పూర్వ పీఠిక, 108 శ్లోకాలు, ఫలశ్రుతి – 1000 నామాలకు తెలుగు అర్థం",
+    subtitleEn: "Opening, 108 shlokas, phalashruti – Telugu meaning of all 1000 names",
+    icon: "శ్రీ",
+    ready: true
   },
   {
     id: "shiva-ashtottaram",

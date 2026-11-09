@@ -1,5 +1,5 @@
 // Offline support: core files are cached on install; each text's file is cached the first time it is opened.
-var CACHE = 'mananam-v10';
+var CACHE = 'mananam-v11';
 var CORE = ['./', './index.html', './library.js', './manifest.webmanifest',
             './icon-180.png', './icon-192.png', './icon-512.png', './texts/rudram/text.js', './texts/rudram/art.js', './fonts/TiroTelugu-mantra.woff2'];
 self.addEventListener('install', function(e){
