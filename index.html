@@ -107,6 +107,17 @@ body.noaudio .mychant,body.noaudio #btnAll,body.noaudio #btnChantUnit,body.noaud
 .lrow .lv{font:500 calc(1.22rem*var(--scale))/1.6 var(--mantra);color:var(--indigo)}
 body.dark .lrow .lv{color:#e6e2d6}
 .lrow .lm{font-size:calc(1rem*var(--scale));line-height:1.6;color:var(--bilva);margin-top:2px}
+.nw{white-space:nowrap}
+.fblock{margin:0 0 26px;text-align:center}
+.fl{white-space:pre-line;font:400 calc(1.26rem*var(--scale))/1.95 var(--mantra);color:var(--indigo);cursor:pointer;border-radius:8px;padding:0 4px}
+.fl.st{margin:14px 0}
+.fl:active,.fullv:active{background:var(--ash-2)}
+body.dark .fl{color:#e6e2d6}
+.fullv.n2{font-size:calc(1.16rem*var(--scale));line-height:1.9;margin:0 0 16px}
+.fsec{font:700 1.22rem var(--sans);color:var(--kumkum);text-align:center;margin:30px 0 12px}
+.fsec.sub{font-size:1.06rem;margin:22px 0 10px}
+.fsp{font:700 1.02rem var(--sans);color:var(--indigo);text-align:center;margin:14px 0 2px}
+body.dark .fsp{color:#c9cdf0}
 .readbtn{display:block;width:100%;margin:8px 0 2px;padding:12px;border-radius:12px;border:1.5px solid var(--indigo);color:var(--indigo);font:600 1rem var(--sans);background:var(--ash-2)}
 body.dark .readbtn{border-color:#9aa0d8;color:#c9cdf0}
 .fullh{text-align:center;margin:6px 0 2px}
@@ -342,7 +353,7 @@ function unitLabel(p){ return (p && tx(p,'unitLabel')) || tx(T,'unitLabel') || t
 function unitWord(p){ return (!p || single(p)) ? t('part') : unitLabel(p); }
 function unitTitle(p,u){ return single(p) ? tx(p,'name') : tx(p,'name')+', '+unitLabel(p)+' '+u.n; }
 function artFor(p,u){ return ART[p.id+'-'+u.n] || null; }
-var VERSION = 'v15';
+var VERSION = 'v16';
 function footer(){ return OWNER ? '<p class="foot">© '+OWNER.year+' '+esc(en() ? OWNER.en : OWNER.te)+' – '+t('copy')+' · '+VERSION+'</p>' : ''; }
 
 function show(which){
@@ -428,7 +439,7 @@ function renderContents(){
   T.parts.forEach(function(p){
     var n = p.units.reduce(function(a,u){ return a+u.items.length; },0);
     h += '<div class="part-h"><h3>'+esc(tx(p,'name'))+'</h3><span>'+(single(p)?'':t('unitsOf').replace('{n}',p.units.length).replace('{u}',unitLabel(p))+', ')+n+' '+(tx(T,'itemsWord') || t('mantras'))+'</span></div>';
-    if(!single(p) && !T.readAll) h += '<button class="readbtn" data-read=""'+esc(p.id)+'">'+t(p.units.some(function(u){ return u.items.some(function(it){ return it.svara; }); }) ? 'readFull' : 'readFullPlain').replace('{p}', tx(p,'name'))+'</button>';
+    if(!single(p) && !T.readAll) h += '<button class="readbtn" data-read="'+esc(p.id)+'">'+t(p.units.some(function(u){ return u.items.some(function(it){ return it.svara; }); }) ? 'readFull' : 'readFullPlain').replace('{p}', tx(p,'name'))+'</button>';
     if(myChant(p.id, 'full')) h += '<button class="chantbtn" data-my="'+esc(p.id)+'">'+t('myFull')+'</button>';
     else if(chantFor(p.id)) h += '<button class="chantbtn" data-chant="'+esc(p.id)+'">'+t('chantFull')+'</button>';
     p.units.forEach(function(u){
@@ -898,8 +909,8 @@ function renderFull(pid){
   if(S.svara && p.units.some(function(u){ return u.items.some(function(it){ return it.svara; }); })) h += '<div class="legend"><span><b>క॒</b> '+t('anu')+'</span><span><b>క॑</b> '+t('svar')+'</span><span><b>క᳚</b> '+t('dsvar')+'</span></div>';
   if(myChant(pid, 'full')) h += '<div class="fullbar"><button id="fullPlay">'+t('myFull')+'</button></div>';
   if(!T.listMode) h += '<p class="foot" style="margin:4px 0 0">'+t('fullTap')+'</p>';
-  p.units.forEach(function(u){
-    if(!T.listMode) h += '<div class="fullu">'+esc(unitLabel(p))+' '+u.n+'</div>';
+  if(!T.listMode){ p.units.forEach(function(u){ h += anuvakaHTML(p, u); }); }
+  else p.units.forEach(function(u){
     u.items.forEach(function(it, i){
       var txt = S.svara && it.svara ? it.svara : it.text;
       if(T.listMode) h += '<div class="lrow"><span class="ln">'+it.n+'</span><div><div class="lv">'+esc(txt)+'</div><div class="lm">'+esc(it.meaning)+'</div></div></div>';
@@ -910,22 +921,43 @@ function renderFull(pid){
   $('full').innerHTML = h; show('full');
   if($('fullPlay')) $('fullPlay').onclick = function(){ openMy(pid, 'full', tx(p,'name')); };
   $('fullTop').onclick = function(){ window.scrollTo({top:0, behavior:'smooth'}); };
-  Array.prototype.forEach.call($('full').querySelectorAll('.fullv'), function(el){ el.onclick = function(){
+  Array.prototype.forEach.call($('full').querySelectorAll('.fl'), function(el){ el.onclick = function(){
     openUnit(pid, +el.getAttribute('data-u'), +el.getAttribute('data-i'));
   }; });
 }
 
+function numEnd(txt, n){   // put the number at the end: "… ॥" -> "… ॥ n ॥" (before a closing "… ఓం నమ ఇతి" refrain)
+  var m = txt.match(/^([\s\S]*?)(\n[^\n]*నమ ఇతి[^\n]*)$/);
+  if(m) return numEnd(m[1], n)+m[2];
+  var tag = '\u00a0॥\u00a0'+n+'\u00a0॥';
+  return /॥\s*$/.test(txt) ? txt.replace(/\s*॥\s*$/, tag) : txt.replace(/\s+$/, '')+tag;
+}
+function verseHTML(txt, n, attrs){   // speaker line in bold, then the verse with its number
+  var lines = txt.split('\n'), sp = '';
+  if(/ఉవాచ\s*[–-]?\s*$/.test(lines[0]) || /^శ్లో॥|మంత్రః$/.test(lines[0].trim())){ sp = lines.shift().replace(/\s*[–-]\s*$/, ''); }
+  return (sp ? '<div class="fsp">'+esc(sp)+'</div>' : '')+'<p class="fullv n2"'+attrs+'>'+nw(esc(numEnd(lines.join('\n'), n)))+'</p>';
+}
+function nw(html){ return html.replace(/(\S*\u00a0॥\u00a0\d+\u00a0॥)/, '<span class="nw">$1</span>'); }
+function anuvakaHTML(p, u){   // one block per anuvakam, a line per mantra, ॥ n ॥ only at the end
+  var h = '<div class="fblock">', last = u.items.length - 1;
+  u.items.forEach(function(it, i){
+    var txt = S.svara && it.svara ? it.svara : it.text, multi = txt.indexOf('\n') >= 0;
+    if(i === last) txt = numEnd(txt, u.n);
+    h += '<div class="fl'+(multi ? ' st' : '')+'" data-p="'+esc(p.id)+'" data-u="'+u.n+'" data-i="'+i+'">'+nw(esc(txt))+'</div>';
+  });
+  return h+'</div>';
+}
 function renderFullAll(){
   fullPid = '*';
   $('title').textContent = tx(T,'title');
   var h = '<div class="fullh"><h2>'+esc(tx(T,'title'))+'</h2></div><p class="foot" style="margin:4px 0 0">'+t('fullTap')+'</p>';
   T.parts.forEach(function(p){
-    h += '<div class="fullh" style="margin-top:30px"><h2 style="font-size:1.3rem">'+esc(tx(p,'name'))+'</h2></div>';
+    h += '<div class="fsec">'+esc(tx(p,'name'))+'</div>';
     p.units.forEach(function(u){
-      h += '<div class="fullu">'+esc(u.name || (unitLabel(p)+' '+u.n))+'</div>';
+      if(u.head) h += '<div class="fsec sub">'+esc(u.head)+'</div>';
       u.items.forEach(function(it, i){
         var txt = S.svara && it.svara ? it.svara : it.text;
-        h += '<p class="fullv" data-p="'+esc(p.id)+'" data-u="'+u.n+'" data-i="'+i+'">'+esc(txt)+'<i>'+it.n+'</i></p>';
+        h += verseHTML(txt, it.n, ' data-p="'+esc(p.id)+'" data-u="'+u.n+'" data-i="'+i+'"');
       });
     });
   });
