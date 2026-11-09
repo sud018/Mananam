@@ -1,12 +1,20 @@
 // The list of texts shown on the app's home screen.
 // To add a new text: create texts/<id>/text.js (copy the format from texts/rudram/text.js),
 // then add or update its entry here with  ready: true.
+// "category" decides which tab at the top of the home screen the text appears in.
 // Owner shown in the footer of the app.
 window.MANANAM_OWNER = { te: "సుధీర్", en: "Sudheer", year: 2026 };
+
+// Tabs at the top of the home screen. Add a new kind of content by adding a line here.
+window.MANANAM_CATEGORIES = [
+  { id: "mantra", title: "మంత్ర స్తోత్రాలు", titleEn: "Mantras & Stotras", icon: "ॐ" },
+  { id: "katha",  title: "పురాణ కథలు",          titleEn: "Sacred Stories",    icon: "📜" }
+];
 
 window.MANANAM_LIBRARY = [
   {
     id: "rudram",
+    category: "mantra",
     title: "శ్రీ రుద్రం",
     titleEn: "Sri Rudram",
     subtitleEn: "Dhyanam, Namakam, Chamakam – 251 mantras with Telugu meaning",
@@ -16,6 +24,7 @@ window.MANANAM_LIBRARY = [
   },
   {
     id: "vishnu-sahasranamam",
+    category: "mantra",
     title: "శ్రీ విష్ణు సహస్రనామం",
     titleEn: "Sri Vishnu Sahasranamam",
     subtitle: "పూర్వ పీఠిక, 108 శ్లోకాలు, ఫలశ్రుతి – 1000 నామాలకు తెలుగు అర్థం",
@@ -25,6 +34,7 @@ window.MANANAM_LIBRARY = [
   },
   {
     id: "shiva-ashtottaram",
+    category: "mantra",
     title: "శ్రీ శివ అష్టోత్తర శతనామావళి",
     titleEn: "Sri Shiva Ashtottara Shatanamavali",
     subtitle: "శివుని 108 నామాలు – ఒకే పేజీలో, తెలుగు అర్థంతో",
@@ -34,11 +44,22 @@ window.MANANAM_LIBRARY = [
   },
   {
     id: "kanakadhara-stotram",
+    category: "mantra",
     title: "శ్రీ కనకధారా స్తోత్రం",
     titleEn: "Sri Kanakadhara Stotram",
     subtitle: "ఆది శంకరాచార్య విరచితం – 21 శ్లోకాలు, తెలుగు అర్థంతో",
     subtitleEn: "By Adi Shankaracharya – 21 verses with Telugu meaning",
     icon: "శ్రీ",
     ready: true
+  },
+  {
+    id: "nayanmars",
+    category: "katha",
+    title: "63 నాయనార్ల కథలు",
+    titleEn: "Stories of the 63 Nayanars",
+    subtitle: "శివభక్తులైన 63 నాయనార్ల జీవిత కథలు",
+    subtitleEn: "Lives of the 63 Shaiva saints",
+    icon: "కథ",
+    ready: false
   }
 ];

@@ -65,6 +65,11 @@ body.dark .resume{background:#2a2e5c}
 .resume b{display:block;font:600 1.02rem var(--serif)}
 .resume small{opacity:.8}
 .resume .lamp{width:30px;height:30px;flex:none}
+.cats{display:flex;gap:8px;margin:4px 0 10px;padding:4px;background:var(--ash-2);border:1px solid var(--rule);border-radius:16px}
+.cats button{flex:1;padding:11px 6px;white-space:nowrap;border-radius:12px;font:600 .98rem var(--sans);color:var(--muted);display:flex;align-items:center;justify-content:center;gap:6px}
+.cats button.on{background:var(--indigo);color:#f3efe6;box-shadow:0 2px 8px rgba(30,35,71,.25)}
+.cats button small{font-size:.75rem;opacity:.8;background:rgba(127,127,127,.18);border-radius:999px;padding:1px 7px}
+body.dark .cats button.on{background:var(--turmeric);color:#1a1405}
 .text-row{display:flex;align-items:center;gap:14px;width:100%;padding:16px 4px;border-bottom:1px solid var(--rule);text-align:left}
 .text-row .sig{width:52px;height:52px;flex:none;border-radius:50%;display:grid;place-items:center;font:400 1.7rem var(--serif);color:#f3efe6;background:var(--indigo)}
 body.dark .text-row .sig{background:#2a2e5c}
@@ -281,7 +286,7 @@ body.dark .done{background:#2a2e5c}
 <script>
 (function(){
 "use strict";
-var LIB = window.MANANAM_LIBRARY || [], OWNER = window.MANANAM_OWNER || null;
+var LIB = window.MANANAM_LIBRARY || [], OWNER = window.MANANAM_OWNER || null, CATS = window.MANANAM_CATEGORIES || [];
 window.MANANAM_TEXTS = window.MANANAM_TEXTS || {};
 window.MANANAM_ART = window.MANANAM_ART || {};
 var $ = function(id){ return document.getElementById(id); };
@@ -294,7 +299,7 @@ var T = null, ART = {}, cur = {part:null, unit:null, idx:0}, revealed = false, s
 
 /* ---------- button text: Telugu or English ---------- */
 var STR = {
- te:{app:'మననం', tagline:'మంత్రం పఠించండి, దాని అర్థం తెలుసుకోండి, ఆ భావాన్ని అనుభూతి చెందండి.',
+ te:{app:'మననం', tagline:'పఠించండి, అర్థం తెలుసుకోండి, ఆ భావాన్ని అనుభూతి చెందండి.',
    cont:'కొనసాగించండి', fromLeft:'మీరు ఆపిన చోటు నుండి', soon:'త్వరలో', mantras:'మంత్రాలు', mantra:'మంత్రం',
    summary:'సారాంశం', wholeOf:'ఈ {u} మొత్తం భావం', spirit:'ఈ {u} భావం', intro:'పరిచయం', part:'భాగం',
    reveal:'పఠించారా? అర్థం చూపించండి', derived:'పుస్తకంలో ఈ మంత్రానికి విడిగా అర్థం ఇవ్వలేదు; ఈ అనువాకం సారాంశం నుండి తీసుకున్నది.',
@@ -315,7 +320,7 @@ var STR = {
    recDel:'🗑 మంత్రం రికార్డింగ్ తొలగించు', recDelA:'🗑 అర్థం రికార్డింగ్ తొలగించు',
    recNow:'రికార్డ్ అవుతోంది… పఠించి, ఆపండి నొక్కండి.', recHas:'ఇక్కడ మీ స్వంత గొంతు వినిపిస్తుంది.',
    recNo:'ఈ బ్రౌజర్‌లో రికార్డింగ్ సౌకర్యం లేదు.', recDenied:'మైక్రోఫోన్ అనుమతి ఇవ్వలేదు.', chantFull:'▶ పూర్తి పఠనం వినండి (YouTube)', myFull:'▶ పూర్తి పఠనం వినండి', readFull:'📖 పూర్తి {p} చదవండి (స్వరాలతో)', readFullPlain:'📖 పూర్తి {p} చదవండి', fullTap:'ఏ మంత్రం నొక్కినా దాని అర్థం తెరుచుకుంటుంది', top:'↑ పైకి', myUnit:'▶ ఈ {u} పఠనం వినండి', myAdd:'🎵 నా పఠనం ఆడియో జోడించు', myAdded:'{n} ఆడియో ఫైళ్ళు జోడించాను ✓', myNone:'పేర్లు సరిపోలలేదు. namakam-1.mp3, chamakam-full.mp3 వంటి పేర్లు ఉండాలి.', myDel:'🗑 పఠనం ఆడియో తొలగించు', myDelQ:'ఈ ఫోన్‌లో ఉన్న పఠనం ఆడియో అంతా తొలగించాలా?', myHave:'ఈ ఫోన్‌లో {n} పఠనం ఫైళ్ళు ఉన్నాయి', chantSpeed:'వేగం', chantMarkBtn:'⏱ మంత్రాల సమయాలు గుర్తించు', chantMarkOff:'✓ గుర్తించడం ఆపు', chantNext:'తరువాత గుర్తించాల్సినది:', chantNow:'⏱ ఈ మంత్రం ఇప్పుడు మొదలైంది', chantEnd:'⏱ పఠనం ఇక్కడ ముగిసింది', chantUndo:'↶ వెనక్కి', chantSkip:'దాటవేయి', chantCopy:'📋 సమయాలు కాపీ', chantCopied:'కాపీ అయింది – Claude కి పంపండి', chantDone:'అన్ని మంత్రాలు గుర్తించారు ✓', chantMarked:'{n} మంత్రాలకు సమయాలు ఉన్నాయి', chantOffline:'YouTube తెరవడానికి ఇంటర్నెట్ కావాలి.', chantHelp:'వీడియో ప్లే చేసి, ప్రతి మంత్రం మొదలవగానే పెద్ద బటన్ నొక్కండి. తర్వాత ఆ మంత్రం విడిగా వినవచ్చు.', missing:'ఈ గ్రంథం తెరవలేకపోయాము. ఈ ఫైల్ ఉందో చూడండి: '},
- en:{app:'Mananam', tagline:'Recite the mantra, learn its meaning, feel what it says.',
+ en:{app:'Mananam', tagline:'Recite, understand the meaning, and feel what it says.',
    cont:'Continue', fromLeft:'from where you stopped', soon:'Coming soon', mantras:'mantras', mantra:'Mantra',
    summary:'Summary', wholeOf:'Overall meaning of this {u}', spirit:'Spirit of this {u}', intro:'Introduction', part:'section',
    reveal:'Recited it? Show the meaning', derived:'The book gives no separate meaning for this mantra; this is taken from the anuvakam summary.',
@@ -353,7 +358,7 @@ function unitLabel(p){ return (p && tx(p,'unitLabel')) || tx(T,'unitLabel') || t
 function unitWord(p){ return (!p || single(p)) ? t('part') : unitLabel(p); }
 function unitTitle(p,u){ return single(p) ? tx(p,'name') : tx(p,'name')+', '+unitLabel(p)+' '+u.n; }
 function artFor(p,u){ return ART[p.id+'-'+u.n] || null; }
-var VERSION = 'v18';
+var VERSION = 'v19';
 function footer(){ return OWNER ? '<p class="foot">© '+OWNER.year+' '+esc(en() ? OWNER.en : OWNER.te)+' – '+t('copy')+' · '+VERSION+'</p>' : ''; }
 
 function show(which){
@@ -408,7 +413,15 @@ function renderLibrary(){
   var h = '<div class="hero"><div class="om" aria-hidden="true">ॐ</div><h2>'+t('app')+'</h2><p>'+t('tagline')+'</p></div><div class="divider" aria-hidden="true"></div>';
   var le = LAST && libEntry(LAST.text);
   if(le && le.ready) h += '<button class="resume" id="resume">'+LAMP+'<span><b>'+t('cont')+'</b><small>'+esc(tx(le,'title'))+' – '+t('fromLeft')+'</small></span></button>';
-  LIB.forEach(function(e){
+  var cat = load('cat', CATS.length ? CATS[0].id : null);
+  if(CATS.length && !CATS.some(function(c){ return c.id === cat; })) cat = CATS[0].id;
+  if(CATS.length > 1) h += '<div class="cats" role="tablist">'+CATS.map(function(c){
+      var n = LIB.filter(function(e){ return (e.category || CATS[0].id) === c.id && e.ready; }).length;
+      return '<button role="tab" data-cat="'+esc(c.id)+'" aria-selected="'+(c.id === cat)+'"'+(c.id === cat ? ' class="on"' : '')+'><span>'+esc(c.icon || '')+'</span>'+esc(tx(c,'title'))+(n ? ' <small>'+n+'</small>' : '')+'</button>';
+    }).join('')+'</div>';
+  var shown = LIB.filter(function(e){ return !CATS.length || (e.category || CATS[0].id) === cat; });
+  if(!shown.length) h += '<p class="foot" style="margin:24px 0">'+t('soon')+'</p>';
+  shown.forEach(function(e){
     h += '<button class="text-row" data-id="'+esc(e.id)+'"'+(e.ready?'':' disabled')+'>'+
          '<span class="sig" aria-hidden="true">'+esc(e.icon || 'ॐ')+'</span>'+
          '<span style="flex:1"><b>'+esc(tx(e,'title'))+'</b><small>'+esc(tx(e,'subtitle') || '')+'</small></span>'+
@@ -416,6 +429,7 @@ function renderLibrary(){
   });
   $('library').innerHTML = h + footer();
   show('library');
+  Array.prototype.forEach.call($('library').querySelectorAll('[data-cat]'), function(b){ b.onclick = function(){ save('cat', b.getAttribute('data-cat')); renderLibrary(); }; });
   Array.prototype.forEach.call($('library').querySelectorAll('.text-row:not([disabled])'), function(b){ b.onclick = function(){ openText(b.getAttribute('data-id')); }; });
   var r = $('resume'); if(r) r.onclick = function(){ openText(LAST.text, function(){ openUnit(LAST.part, LAST.unit, LAST.idx); }); };
 }
