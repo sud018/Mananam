@@ -125,6 +125,20 @@ body.dark .nav button{background:#2a2e5c}
 .note label{display:block;font:600 .95rem var(--serif);color:var(--muted);margin-bottom:6px}
 textarea{width:100%;min-height:84px;border:1px solid var(--rule);border-radius:12px;padding:10px 12px;background:var(--ash-2);color:var(--ink);font:inherit;font-size:1rem}
 
+.chantbtn{display:block;width:100%;margin:8px 0 2px;padding:12px;border-radius:12px;border:1.5px solid var(--kumkum);color:var(--kumkum);font:600 1rem var(--sans);background:var(--ash-2)}
+#yt{position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--indigo);color:#fff;padding:8px 10px calc(10px + env(safe-area-inset-bottom));box-shadow:0 -6px 20px rgba(0,0,0,.3);max-width:720px;margin:0 auto;border-radius:16px 16px 0 0}
+#yt.hidden{display:none}
+#yt .ythead{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+#yt .ythead b{flex:1;font:600 .98rem var(--sans);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#yt .ythead button{color:#fff;font-size:1.3rem;padding:2px 8px}
+#ytBox{position:relative;width:100%;max-width:420px;margin:0 auto;aspect-ratio:16/9;max-height:28vh;background:#000;border-radius:8px;overflow:hidden}
+#ytBox iframe,#ytBox>div{position:absolute;inset:0;width:100%;height:100%}
+#yt .ytrow{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:8px}
+#yt .ytrow button{padding:7px 11px;border-radius:999px;border:1px solid rgba(255,255,255,.35);color:#fff;font-size:.92rem}
+#yt .ytrow button.on{background:var(--turmeric);border-color:var(--turmeric);color:#1a1405}
+#yt .marknext{font-size:.9rem;text-align:center;margin-top:8px;opacity:.95}
+#yt .bigmark{display:block;width:100%;margin-top:6px;padding:14px;border-radius:12px;background:var(--turmeric);color:#1a1405;font:700 1.05rem var(--sans)}
+body.ytopen .wrap{padding-bottom:46vh}
 .sheet{position:fixed;inset:0;z-index:20;background:rgba(10,12,30,.5);display:none}
 .sheet.open{display:block}
 .sheet .panel{position:absolute;left:0;right:0;bottom:0;max-height:86vh;overflow:auto;background:var(--ash);border-radius:20px 20px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom));max-width:720px;margin:0 auto}
@@ -197,6 +211,13 @@ body.dark .done{background:#2a2e5c}
 </div>
 </main>
 
+<div id="yt" class="hidden">
+  <div class="ythead"><b id="ytTitle"></b><button id="ytClose" aria-label="close">✕</button></div>
+  <div id="ytBox"><div id="ytFrame"></div></div>
+  <div class="ytrow" id="ytSpeeds"></div>
+  <div class="ytrow" id="ytTools"></div>
+  <div id="ytMark"></div>
+</div>
 <div class="sheet" id="sheet"><div class="panel" id="panel" role="dialog"></div></div>
 
 <script src="library.js"></script>
@@ -236,7 +257,7 @@ var STR = {
    rec:'🎙 మంత్రం రికార్డ్', recA:'🎙 అర్థం రికార్డ్', recStop:'■ రికార్డింగ్ ఆపండి', recAgain:'🎙 మంత్రం మళ్ళీ', recAgainA:'🎙 అర్థం మళ్ళీ',
    recDel:'🗑 మంత్రం రికార్డింగ్ తొలగించు', recDelA:'🗑 అర్థం రికార్డింగ్ తొలగించు',
    recNow:'రికార్డ్ అవుతోంది… పఠించి, ఆపండి నొక్కండి.', recHas:'ఇక్కడ మీ స్వంత గొంతు వినిపిస్తుంది.',
-   recNo:'ఈ బ్రౌజర్‌లో రికార్డింగ్ సౌకర్యం లేదు.', recDenied:'మైక్రోఫోన్ అనుమతి ఇవ్వలేదు.', missing:'ఈ గ్రంథం తెరవలేకపోయాము. ఈ ఫైల్ ఉందో చూడండి: '},
+   recNo:'ఈ బ్రౌజర్‌లో రికార్డింగ్ సౌకర్యం లేదు.', recDenied:'మైక్రోఫోన్ అనుమతి ఇవ్వలేదు.', chantFull:'▶ పూర్తి పఠనం వినండి (YouTube)', chantSpeed:'వేగం', chantMarkBtn:'⏱ మంత్రాల సమయాలు గుర్తించు', chantMarkOff:'✓ గుర్తించడం ఆపు', chantNext:'తరువాత గుర్తించాల్సినది:', chantNow:'⏱ ఈ మంత్రం ఇప్పుడు మొదలైంది', chantEnd:'⏱ పఠనం ఇక్కడ ముగిసింది', chantUndo:'↶ వెనక్కి', chantSkip:'దాటవేయి', chantCopy:'📋 సమయాలు కాపీ', chantCopied:'కాపీ అయింది – Claude కి పంపండి', chantDone:'అన్ని మంత్రాలు గుర్తించారు ✓', chantMarked:'{n} మంత్రాలకు సమయాలు ఉన్నాయి', chantOffline:'YouTube తెరవడానికి ఇంటర్నెట్ కావాలి.', chantHelp:'వీడియో ప్లే చేసి, ప్రతి మంత్రం మొదలవగానే పెద్ద బటన్ నొక్కండి. తర్వాత ఆ మంత్రం విడిగా వినవచ్చు.', missing:'ఈ గ్రంథం తెరవలేకపోయాము. ఈ ఫైల్ ఉందో చూడండి: '},
  en:{app:'Mananam', tagline:'Recite the mantra, learn its meaning, feel what it says.',
    cont:'Continue', fromLeft:'from where you stopped', soon:'Coming soon', mantras:'mantras', mantra:'Mantra',
    summary:'Summary', wholeOf:'Overall meaning of this {u}', spirit:'Spirit of this {u}', intro:'Introduction', part:'section',
@@ -257,7 +278,7 @@ var STR = {
    rec:'🎙 Record mantra', recA:'🎙 Record meaning', recStop:'■ Stop recording', recAgain:'🎙 Re-record mantra', recAgainA:'🎙 Re-record meaning',
    recDel:'🗑 Delete mantra recording', recDelA:'🗑 Delete meaning recording',
    recNow:'Recording… speak, then tap Stop.', recHas:'Your own voice plays here.',
-   recNo:'This browser cannot record.', recDenied:'Microphone permission was not given.', missing:'Could not open this text. Check that this file exists: '}
+   recNo:'This browser cannot record.', recDenied:'Microphone permission was not given.', chantFull:'▶ Full chanting (YouTube)', chantSpeed:'Speed', chantMarkBtn:'⏱ Mark mantra times', chantMarkOff:'✓ Stop marking', chantNext:'Next to mark:', chantNow:'⏱ This mantra starts now', chantEnd:'⏱ Chanting ends here', chantUndo:'↶ Undo', chantSkip:'Skip', chantCopy:'📋 Copy times', chantCopied:'Copied – send it to Claude', chantDone:'All mantras marked ✓', chantMarked:'{n} mantras have times', chantOffline:'YouTube needs an internet connection.', chantHelp:'Play the video and tap the big button the moment each mantra begins. Then each mantra can be played on its own.', missing:'Could not open this text. Check that this file exists: '}
 };
 function t(k, u){ var s = (STR[S.lang] || STR.te)[k] || STR.te[k] || k; return u === undefined ? s : s.replace('{u}', u); }
 function en(){ return S.lang === 'en'; }
@@ -296,7 +317,9 @@ function loadText(id, done){
   loadScript('texts/'+encodeURIComponent(id)+'/text.js', function(){
     var tt = window.MANANAM_TEXTS[id] || null;
     loadScript('texts/'+encodeURIComponent(id)+'/art.js', function(){
-      loadScript('audio/'+encodeURIComponent(id)+'/index.js', function(){ done(tt); });   // optional natural-voice audio
+      loadScript('audio/'+encodeURIComponent(id)+'/index.js', function(){
+        loadScript('texts/'+encodeURIComponent(id)+'/chant.js', function(){ done(tt); });   // optional YouTube chanting
+      });   // optional natural-voice audio
     });
   });
 }
@@ -355,6 +378,7 @@ function renderContents(){
   T.parts.forEach(function(p){
     var n = p.units.reduce(function(a,u){ return a+u.items.length; },0);
     h += '<div class="part-h"><h3>'+esc(tx(p,'name'))+'</h3><span>'+(single(p)?'':t('unitsOf').replace('{n}',p.units.length).replace('{u}',unitLabel(p))+', ')+n+' '+t('mantras')+'</span></div>';
+    if(chantFor(p.id)) h += '<button class="chantbtn" data-chant="'+esc(p.id)+'">'+t('chantFull')+'</button>';
     p.units.forEach(function(u){
       var a = artFor(p,u), st = steps(u), rd = READ[ukey(p,u)] || {};
       var dots = st.map(function(_,i){ return '<i'+(rd[i+1]?' class="r"':'')+'></i>'; }).join('');
@@ -368,6 +392,7 @@ function renderContents(){
   show('contents');
   Array.prototype.forEach.call($('contents').querySelectorAll('.unit-row:not([disabled])'), function(b){ b.onclick = function(){ openUnit(b.getAttribute('data-p'), +b.getAttribute('data-u'), 0); }; });
   var r = $('resumeText'); if(r) r.onclick = function(){ openUnit(pos.part, pos.unit, pos.idx); };
+  Array.prototype.forEach.call($('contents').querySelectorAll('.chantbtn'), function(b){ b.onclick = function(){ unlockAudio(); openChant(b.getAttribute('data-chant'), 0, false); }; });
 }
 
 /* ---------- reader ---------- */
@@ -564,6 +589,7 @@ function stopSpeech(){
   token++; playing = null; playingAll = false;
   try{ speechSynthesis.cancel(); }catch(e){}
   try{ AUD.pause(); AUD.onended = null; }catch(e){}
+  if(ytClip){ ytClip = null; clearInterval(ytTimer); try{ YTP.pauseVideo(); }catch(e){} }
   if(wake){ try{ wake.release(); }catch(e){} wake = null; }
   setPlayUI();
 }
@@ -592,6 +618,7 @@ function sayQueue(list, my, done){   // list of {kind, src} or {kind, text}
     if(i >= list.length){ done(); return; }
     var item = list[i++]; playing = item.kind; setPlayUI(); mediaSession();
     if(item.src){ playSrc(item.src, my, next); return; }
+    if(item.yt){ playClip(item.yt, my, next); return; }
     if(!hasTTS){ setTimeout(next, 50); return; }
     var u = utter(item.text, item.kind);
     u.onend = function(){ setTimeout(next, 150); };
@@ -602,7 +629,10 @@ function sayQueue(list, my, done){   // list of {kind, src} or {kind, text}
 function currentParts(mode){
   var it = steps(cur.unit)[cur.idx], list = [];
   var add = function(kind, text){
-    var src = kind === 'mantra' ? (recURL(key()) || fileFor('mantra')) : (recURL(key()+'-a') || fileFor('meaning'));
+    var rec = kind === 'mantra' ? recURL(key()) : recURL(key()+'-a');
+    var clip = kind === 'mantra' && !rec && clipFor(cur.part.id, cur.unit.n, cur.idx+1);
+    if(clip){ list.push({kind:kind, yt:clip}); return; }
+    var src = rec || (kind === 'mantra' ? fileFor('mantra') : fileFor('meaning'));
     if(src) list.push({kind:kind, src:src});
     else chunks(text).forEach(function(c){ list.push({text:c, kind:kind}); });
   };
@@ -613,6 +643,7 @@ function currentParts(mode){
   return list;
 }
 function playOne(kind){
+  unlockAudio();
   if(playing === kind && !playingAll){ stopSpeech(); return; }
   stopSpeech(); refreshVoices();
   if(kind === 'meaning' && !revealed){ revealed = true; drawMeaning(steps(cur.unit)[cur.idx]); }
@@ -620,6 +651,7 @@ function playOne(kind){
   sayQueue(currentParts(kind), my, function(){ playing = null; setPlayUI(); });
 }
 function playAll(){
+  unlockAudio();
   if(playingAll){ stopSpeech(); return; }
   stopSpeech(); refreshVoices();
   playingAll = true;
@@ -637,6 +669,150 @@ function playAll(){
     });
   })();
 }
+
+/* ---------- chanting from YouTube (played inside the app, never downloaded) ---------- */
+var SILENT = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+var audioUnlocked = false;
+function unlockAudio(){   // iPhone: let later meaning clips play after a YouTube mantra
+  if(audioUnlocked) return; audioUnlocked = true;
+  try{ AUD.onended = null; AUD.onerror = null; AUD.src = SILENT; var p = AUD.play(); if(p && p.catch) p.catch(function(){}); }catch(e){}
+}
+function chantCfg(){ return (window.MANANAM_CHANT || {})[T && T.id] || null; }
+function chantFor(pid){ var c = chantCfg(); return c && c.parts && c.parts[pid] || null; }
+function chantTimes(pid){   // built-in times, overridden by times marked on this device
+  var c = chantFor(pid) || {}, mine = load('chant.'+T.id+'.'+pid, null);
+  return Object.assign({}, c.times || {}, mine || {});
+}
+function partOrder(pid){   // every mantra of the part in order: "unit-item"
+  var p = findPart(pid), out = [];
+  p.units.forEach(function(u){ u.items.forEach(function(_, i){ out.push(u.n+'-'+(i+1)); }); });
+  return out;
+}
+function clipFor(pid, un, idx){
+  var c = chantFor(pid); if(!c) return null;
+  var tm = chantTimes(pid), k = un+'-'+idx; if(tm[k] == null) return null;
+  var ord = partOrder(pid), i = ord.indexOf(k), end = null;
+  for(var j = i+1; j < ord.length && end == null; j++) if(tm[ord[j]] != null) end = tm[ord[j]];
+  if(end == null && tm.end != null) end = tm.end;
+  return {id: c.yt, start: tm[k], end: end, pid: pid};
+}
+var YTP = null, ytReady = false, ytWaiting = [], ytClip = null, ytTimer = null, ytPid = null, ytMarking = false;
+function ytLoadApi(cb){
+  if(ytReady) return cb();
+  ytWaiting.push(cb);
+  if(window.YT && window.YT.Player){ return ytMake(); }
+  if(document.getElementById('ytapi')) return;
+  window.onYouTubeIframeAPIReady = ytMake;
+  var s = document.createElement('script'); s.id = 'ytapi'; s.src = 'https://www.youtube.com/iframe_api';
+  s.onerror = function(){ $('ytTitle').textContent = t('chantOffline'); };
+  document.head.appendChild(s);
+}
+function ytMake(){
+  if(YTP) return;
+  YTP = new YT.Player('ytFrame', {width:'100%', height:'100%', playerVars:{playsinline:1, rel:0, modestbranding:1},
+    events:{onReady:function(){ ytReady = true; var w = ytWaiting; ytWaiting = []; w.forEach(function(f){ f(); }); },
+            onStateChange:function(e){ if(e.data === 0 && ytClip){ var c = ytClip; ytClip = null; clearInterval(ytTimer); c.next(); } }}});
+}
+function ytShow(pid){
+  ytPid = pid; var p = findPart(pid);
+  $('yt').classList.remove('hidden'); document.body.classList.add('ytopen');
+  $('ytTitle').textContent = tx(p,'name');
+  var rate = S.chantRate || 1;
+  $('ytSpeeds').innerHTML = '<span style="align-self:center;font-size:.9rem;opacity:.8">'+t('chantSpeed')+'</span>' +
+    [0.5,0.75,1,1.25,1.5,2].map(function(r){ return '<button data-r="'+r+'"'+(r === rate ? ' class="on"' : '')+'>'+r+'×</button>'; }).join('');
+  Array.prototype.forEach.call($('ytSpeeds').querySelectorAll('button'), function(b){ b.onclick = function(){
+    S.chantRate = +b.getAttribute('data-r'); save('settings', S); try{ YTP.setPlaybackRate(S.chantRate); }catch(e){} ytShow(pid);
+  }; });
+  var n = Object.keys(chantTimes(pid)).filter(function(k){ return k !== 'end'; }).length;
+  $('ytTools').innerHTML = '<button id="ytMarkBtn"'+(ytMarking ? ' class="on"' : '')+'>'+(ytMarking ? t('chantMarkOff') : t('chantMarkBtn'))+'</button>' +
+    (n ? '<button id="ytCopy">'+t('chantCopy')+'</button>' : '');
+  $('ytMarkBtn').onclick = function(){ ytMarking = !ytMarking; ytShow(pid); };
+  if($('ytCopy')) $('ytCopy').onclick = copyTimes;
+  drawMarking();
+}
+function openChant(pid, start, autoplay){
+  var c = chantFor(pid); if(!c) return;
+  ytShow(pid);
+  ytLoadApi(function(){
+    try{
+      var vd = YTP.getVideoData && YTP.getVideoData();
+      if(!vd || vd.video_id !== c.yt) YTP.cueVideoById({videoId:c.yt, startSeconds:start || 0});
+      else if(start) YTP.seekTo(start, true);
+      YTP.setPlaybackRate(S.chantRate || 1);
+      if(autoplay) YTP.playVideo();
+    }catch(e){}
+  });
+}
+function playClip(clip, my, next){
+  openChant(clip.pid, clip.start, false);
+  ytLoadApi(function(){
+    if(my !== token) return;
+    var c = chantFor(clip.pid);
+    try{
+      var vd = YTP.getVideoData && YTP.getVideoData();
+      if(!vd || vd.video_id !== c.yt) YTP.loadVideoById({videoId:c.yt, startSeconds:clip.start});
+      else { YTP.seekTo(clip.start, true); YTP.playVideo(); }
+      YTP.setPlaybackRate(S.chantRate || 1);
+    }catch(e){ setTimeout(next, 50); return; }
+    ytClip = {next: function(){ if(my === token) setTimeout(next, 250); }};
+    clearInterval(ytTimer);
+    ytTimer = setInterval(function(){
+      if(my !== token || !ytClip){ clearInterval(ytTimer); return; }
+      var tnow = 0; try{ tnow = YTP.getCurrentTime(); }catch(e){}
+      if(clip.end != null && tnow >= clip.end - 0.05){
+        clearInterval(ytTimer); try{ YTP.pauseVideo(); }catch(e){}
+        var c2 = ytClip; ytClip = null; c2.next();
+      }
+    }, 120);
+  });
+}
+function nextToMark(pid){
+  var tm = chantTimes(pid), skip = load('chantskip.'+T.id+'.'+pid, {}), ord = partOrder(pid);
+  for(var i = 0; i < ord.length; i++) if(tm[ord[i]] == null && !skip[ord[i]]) return ord[i];
+  return tm.end == null ? 'end' : null;
+}
+function drawMarking(){
+  var pid = ytPid, box = $('ytMark');
+  if(!ytMarking){ box.innerHTML = ''; return; }
+  var k = nextToMark(pid), p = findPart(pid), label = '', preview = '';
+  if(k && k !== 'end'){
+    var a = k.split('-'), u = findUnit(p, +a[0]), it = u.items[+a[1]-1];
+    label = (single(p) ? '' : unitLabel(p)+' '+u.n+', ')+(tx(T,'itemLabel') || t('mantra'))+' '+it.n;
+    preview = it.text.split(/\s+/).slice(0,5).join(' ')+' …';
+  }
+  box.innerHTML = '<div class="marknext">'+(k ? t('chantNext')+' <b>'+esc(label || t('chantEnd'))+'</b><br><span style="font-family:var(--mantra)">'+esc(preview)+'</span>' : t('chantDone'))+'</div>' +
+    (k ? '<button class="bigmark" id="ytNow">'+(k === 'end' ? t('chantEnd') : t('chantNow'))+'</button>' : '') +
+    '<div class="ytrow"><button id="ytUndo">'+t('chantUndo')+'</button>'+(k && k !== 'end' ? '<button id="ytSkip">'+t('chantSkip')+'</button>' : '')+'</div>' +
+    '<div class="marknext" style="opacity:.75">'+t('chantHelp')+'</div>';
+  if($('ytNow')) $('ytNow').onclick = function(){
+    var tnow = 0; try{ tnow = YTP.getCurrentTime(); }catch(e){}
+    var mine = load('chant.'+T.id+'.'+pid, {}), hist = load('chanthist.'+T.id+'.'+pid, []);
+    mine[k] = Math.max(0, Math.round((tnow - 0.25)*100)/100); hist.push(k);
+    save('chant.'+T.id+'.'+pid, mine); save('chanthist.'+T.id+'.'+pid, hist); ytShow(pid);
+  };
+  if($('ytSkip')) $('ytSkip').onclick = function(){
+    var sk = load('chantskip.'+T.id+'.'+pid, {}), hist = load('chanthist.'+T.id+'.'+pid, []);
+    sk[k] = 1; hist.push('skip:'+k); save('chantskip.'+T.id+'.'+pid, sk); save('chanthist.'+T.id+'.'+pid, hist); drawMarking();
+  };
+  $('ytUndo').onclick = function(){
+    var hist = load('chanthist.'+T.id+'.'+pid, []), last = hist.pop(); if(!last) return;
+    if(last.indexOf('skip:') === 0){ var sk = load('chantskip.'+T.id+'.'+pid, {}); delete sk[last.slice(5)]; save('chantskip.'+T.id+'.'+pid, sk); }
+    else { var mine = load('chant.'+T.id+'.'+pid, {}); delete mine[last]; save('chant.'+T.id+'.'+pid, mine); }
+    save('chanthist.'+T.id+'.'+pid, hist); ytShow(pid);
+  };
+}
+function copyTimes(){
+  var out = {}; Object.keys((chantCfg() || {}).parts || {}).forEach(function(pid){ out[pid] = load('chant.'+T.id+'.'+pid, {}); });
+  var txt = 'MANANAM-CHANT-TIMES ' + JSON.stringify(out);
+  var ok = function(){ $('ytCopy').textContent = t('chantCopied'); };
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok, function(){ prompt('', txt); });
+  else prompt('', txt);
+}
+$('ytClose').onclick = function(){
+  if(ytClip) stopSpeech();
+  try{ YTP.pauseVideo(); }catch(e){}
+  ytMarking = false; $('yt').classList.add('hidden'); document.body.classList.remove('ytopen');
+};
 
 /* ---------- sheets: jump list and settings ---------- */
 function openSheet(html, label){ $('panel').innerHTML = html; $('panel').setAttribute('aria-label', label); $('sheet').classList.add('open'); }
