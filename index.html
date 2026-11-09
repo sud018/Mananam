@@ -169,6 +169,11 @@ body.dark .done{background:#2a2e5c}
       <button id="btnMeaning"></button>
     </div>
     <div class="status" id="voiceStatus"></div>
+    <div class="small-play" id="recRow">
+      <button id="btnRec"></button>
+      <button id="btnRecDel" class="hidden"></button>
+    </div>
+    <div class="status" id="recStatus"></div>
   </div>
   <div class="nav">
     <button id="btnPrev"></button>
@@ -219,7 +224,10 @@ var STR = {
    voiceHelp:'సంస్కృత మంత్రాలకు హిందీ లేదా సంస్కృత వాయిస్ బాగుంటుంది. ఇది సాధారణ ఉచ్చారణ మాత్రమే, వేద స్వరాలతో పఠనం కాదు.',
    noTe:'తెలుగు వాయిస్ లేదు. iPhone: Settings → Accessibility → Spoken Content → Voices → Telugu. Windows లో Microsoft Edge బ్రౌజర్ వాడండి.',
    noVoice:'ఈ బ్రౌజర్‌లో వినిపించే సౌకర్యం లేదు.', done:'సరే', copy:'వ్యక్తిగత ప్రతి', listT:'మంత్రాల జాబితా', jump:'మంత్రానికి వెళ్ళండి',
-   unitsOf:'{n} {u}లు', missing:'ఈ గ్రంథం తెరవలేకపోయాము. ఈ ఫైల్ ఉందో చూడండి: '},
+   unitsOf:'{n} {u}లు',
+   rec:'🎙 నా పఠనం రికార్డ్ చేయండి', recStop:'■ రికార్డింగ్ ఆపండి', recAgain:'🎙 మళ్ళీ రికార్డ్ చేయండి', recDel:'🗑 తొలగించండి',
+   recNow:'రికార్డ్ అవుతోంది… మంత్రం పఠించి, ఆపండి నొక్కండి.', recHas:'ఈ మంత్రానికి మీ స్వంత పఠనం వినిపిస్తుంది.',
+   recNo:'ఈ బ్రౌజర్‌లో రికార్డింగ్ సౌకర్యం లేదు.', recDenied:'మైక్రోఫోన్ అనుమతి ఇవ్వలేదు.', missing:'ఈ గ్రంథం తెరవలేకపోయాము. ఈ ఫైల్ ఉందో చూడండి: '},
  en:{app:'Mananam', tagline:'Recite the mantra, learn its meaning, feel what it says.',
    cont:'Continue', fromLeft:'from where you stopped', soon:'Coming soon', mantras:'mantras', mantra:'Mantra',
    summary:'Summary', wholeOf:'Overall meaning of this {u}', spirit:'Spirit of this {u}', intro:'Introduction', part:'section',
@@ -233,7 +241,10 @@ var STR = {
    voiceHelp:'A Hindi or Sanskrit voice suits the Sanskrit mantras. It is plain pronunciation, not Vedic chanting with svaras.',
    noTe:'No Telugu voice found. iPhone: Settings → Accessibility → Spoken Content → Voices → Telugu. On Windows, use the Microsoft Edge browser.',
    noVoice:'This browser cannot read aloud.', done:'Done', copy:'Personal copy', listT:'All mantras', jump:'Go to mantra',
-   unitsOf:'{n} {u}s', missing:'Could not open this text. Check that this file exists: '}
+   unitsOf:'{n} {u}s',
+   rec:'🎙 Record my chanting', recStop:'■ Stop recording', recAgain:'🎙 Record again', recDel:'🗑 Delete',
+   recNow:'Recording… chant the mantra, then tap Stop.', recHas:'Your own chanting plays for this mantra.',
+   recNo:'This browser cannot record.', recDenied:'Microphone permission was not given.', missing:'Could not open this text. Check that this file exists: '}
 };
 function t(k, u){ var s = (STR[S.lang] || STR.te)[k] || STR.te[k] || k; return u === undefined ? s : s.replace('{u}', u); }
 function en(){ return S.lang === 'en'; }
@@ -271,7 +282,9 @@ function loadText(id, done){
   if(window.MANANAM_TEXTS[id]) return done(window.MANANAM_TEXTS[id]);
   loadScript('texts/'+encodeURIComponent(id)+'/text.js', function(){
     var tt = window.MANANAM_TEXTS[id] || null;
-    loadScript('texts/'+encodeURIComponent(id)+'/art.js', function(){ done(tt); });
+    loadScript('texts/'+encodeURIComponent(id)+'/art.js', function(){
+      loadScript('audio/'+encodeURIComponent(id)+'/index.js', function(){ done(tt); });   // optional natural-voice audio
+    });
   });
 }
 function applySettings(){
@@ -381,7 +394,7 @@ function renderStep(){
   $('btnMark').textContent = marked ? t('marked') : t('mark');
   $('btnMark').setAttribute('aria-pressed', marked);
   $('noteBox').value = NOTES[key()] || '';
-  setPlayUI();
+  setPlayUI(); recUI();
   save('pos.'+T.id, {part:p.id, unit:u.n, idx:cur.idx});
   LAST = {text:T.id, part:p.id, unit:u.n, idx:cur.idx}; save('last', LAST);
 }
@@ -417,6 +430,7 @@ function mantraVoice(){
 }
 function voiceStatus(){
   var el = $('voiceStatus'); if(!el) return;
+  if(audioIndex()){ el.textContent = ''; return; }
   el.textContent = !hasTTS ? t('noVoice') : (VOICES.length && !teluguVoice() ? t('noTe') : '');
 }
 /* Telugu script → Devanagari, so a Hindi/Sanskrit voice can read the Sanskrit mantra */
@@ -452,6 +466,62 @@ function chunks(text){
   return out.map(function(s){ return s.trim(); }).filter(function(s){ return /[ఀ-౿A-Za-z]/.test(s); });
 }
 
+/* ---------- my own chanting: recordings kept on this device ---------- */
+var DB = null, RECS = {};   // key -> object URL
+function idb(cb){
+  if(DB) return cb(DB);
+  try{
+    var r = indexedDB.open('mananam', 1);
+    r.onupgradeneeded = function(){ r.result.createObjectStore('rec'); };
+    r.onsuccess = function(){ DB = r.result; cb(DB); };
+    r.onerror = function(){ cb(null); };
+  }catch(e){ cb(null); }
+}
+function loadRecs(){
+  idb(function(db){ if(!db) return;
+    var st = db.transaction('rec').objectStore('rec'), req = st.openCursor();
+    req.onsuccess = function(){ var c = req.result; if(c){ RECS[c.key] = URL.createObjectURL(c.value); c.continue(); } else if(screen === 'reader') renderStep(); };
+  });
+}
+function recURL(k){ return RECS[k] || null; }
+function saveRec(k, blob){
+  idb(function(db){ if(!db) return; db.transaction('rec','readwrite').objectStore('rec').put(blob, k); });
+  if(RECS[k]) URL.revokeObjectURL(RECS[k]); RECS[k] = URL.createObjectURL(blob);
+}
+function delRec(k){
+  idb(function(db){ if(!db) return; db.transaction('rec','readwrite').objectStore('rec').delete(k); });
+  if(RECS[k]) URL.revokeObjectURL(RECS[k]); delete RECS[k];
+}
+var recorder = null, recChunks = [];
+function canRecord(){ return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder); }
+function toggleRecord(){
+  if(recorder){ recorder.stop(); return; }
+  if(!canRecord()){ $('recStatus').textContent = t('recNo'); return; }
+  stopSpeech();
+  var k = key();
+  navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+    recChunks = [];
+    var type = ['audio/mp4','audio/webm;codecs=opus','audio/webm'].filter(function(m){ return MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m); })[0];
+    recorder = type ? new MediaRecorder(stream, {mimeType:type}) : new MediaRecorder(stream);
+    recorder.ondataavailable = function(e){ if(e.data && e.data.size) recChunks.push(e.data); };
+    recorder.onstop = function(){
+      stream.getTracks().forEach(function(tr){ tr.stop(); });
+      if(recChunks.length) saveRec(k, new Blob(recChunks, {type: recorder.mimeType || 'audio/mp4'}));
+      recorder = null; recUI();
+    };
+    recorder.start(); recUI();
+  }).catch(function(){ $('recStatus').textContent = t('recDenied'); });
+}
+function recUI(){
+  var it = cur.unit && steps(cur.unit)[cur.idx], isV = it && it.kind === 'v', has = isV && !!recURL(key());
+  $('recRow').classList.toggle('hidden', !isV);
+  $('btnRec').textContent = recorder ? t('recStop') : (has ? t('recAgain') : t('rec'));
+  $('btnRec').classList.toggle('on', !!recorder);
+  $('btnRecDel').classList.toggle('hidden', !has || !!recorder);
+  $('btnRecDel').textContent = t('recDel');
+  $('recStatus').textContent = recorder ? t('recNow') : (has ? t('recHas') : '');
+}
+
 /* ---------- playback ---------- */
 var token = 0, playing = null, playingAll = false, wake = null;
 function setPlayUI(){
@@ -468,15 +538,35 @@ function setPlayUI(){
 function stopSpeech(){
   token++; playing = null; playingAll = false;
   try{ speechSynthesis.cancel(); }catch(e){}
+  try{ AUD.pause(); AUD.onended = null; }catch(e){}
   if(wake){ try{ wake.release(); }catch(e){} wake = null; }
   setPlayUI();
 }
-function sayQueue(list, my, done){   // list of {text, kind}
+var AUD = new Audio(); AUD.preload = 'auto';
+function audioIndex(){ return (window.MANANAM_AUDIO || {})[T && T.id] || null; }
+function stepKey(){ return cur.part.id+'-'+cur.unit.n+'-'+(cur.idx+1); }
+function fileFor(kind){
+  var ai = audioIndex(), k = stepKey()+'-'+(kind === 'mantra' ? 'm' : 'a');
+  return ai && ai.files && ai.files[k] ? 'audio/'+T.id+'/'+k+'.mp3' : null;
+}
+function playSrc(src, my, next){
+  AUD.onended = function(){ if(my === token) setTimeout(next, 250); };
+  AUD.onerror = function(){ if(my === token) setTimeout(next, 50); };
+  AUD.src = src; AUD.playbackRate = S.rate; try{ AUD.preservesPitch = true; }catch(e){}
+  var p = AUD.play(); if(p && p.catch) p.catch(function(){ if(my === token) setTimeout(next, 50); });
+}
+function mediaSession(){
+  if(!('mediaSession' in navigator) || !cur.unit) return;
+  try{ navigator.mediaSession.metadata = new MediaMetadata({title: unitTitle(cur.part,cur.unit)+' – '+(cur.idx+1), artist: tx(T,'title'), album: t('app')}); }catch(e){}
+}
+function sayQueue(list, my, done){   // list of {kind, src} or {kind, text}
   var i = 0;
   (function next(){
     if(my !== token) return;
     if(i >= list.length){ done(); return; }
-    var item = list[i++]; playing = item.kind; setPlayUI();
+    var item = list[i++]; playing = item.kind; setPlayUI(); mediaSession();
+    if(item.src){ playSrc(item.src, my, next); return; }
+    if(!hasTTS){ setTimeout(next, 50); return; }
     var u = utter(item.text, item.kind);
     u.onend = function(){ setTimeout(next, 150); };
     u.onerror = function(e){ if(my === token && e.error !== 'interrupted' && e.error !== 'canceled') setTimeout(next, 150); };
@@ -485,16 +575,18 @@ function sayQueue(list, my, done){   // list of {text, kind}
 }
 function currentParts(mode){
   var it = steps(cur.unit)[cur.idx], list = [];
+  var add = function(kind, text){
+    var src = kind === 'mantra' ? (recURL(key()) || fileFor('mantra')) : fileFor('meaning');
+    if(src) list.push({kind:kind, src:src});
+    else chunks(text).forEach(function(c){ list.push({text:c, kind:kind}); });
+  };
   if(it.kind === 'v'){
-    if(mode !== 'meaning') chunks(it.v.text).forEach(function(c){ list.push({text:c, kind:'mantra'}); });
-    if(mode !== 'mantra') chunks(it.v.meaning).forEach(function(c){ list.push({text:c, kind:'meaning'}); });
-  }else if(mode !== 'mantra'){
-    chunks(it.text).forEach(function(c){ list.push({text:c, kind:'meaning'}); });
-  }
+    if(mode !== 'meaning') add('mantra', it.v.text);
+    if(mode !== 'mantra') add('meaning', it.v.meaning);
+  }else if(mode !== 'mantra') add('meaning', it.text);
   return list;
 }
 function playOne(kind){
-  if(!hasTTS) return;
   if(playing === kind && !playingAll){ stopSpeech(); return; }
   stopSpeech(); refreshVoices();
   if(kind === 'meaning' && !revealed){ revealed = true; drawMeaning(steps(cur.unit)[cur.idx]); }
@@ -502,7 +594,6 @@ function playOne(kind){
   sayQueue(currentParts(kind), my, function(){ playing = null; setPlayUI(); });
 }
 function playAll(){
-  if(!hasTTS) return;
   if(playingAll){ stopSpeech(); return; }
   stopSpeech(); refreshVoices();
   playingAll = true;
@@ -580,6 +671,8 @@ $('slider').oninput = function(){ goTo(+this.value-1); };
 $('btnAll').onclick = playAll;
 $('btnMantra').onclick = function(){ playOne('mantra'); };
 $('btnMeaning').onclick = function(){ playOne('meaning'); };
+$('btnRec').onclick = function(){ toggleRecord(); };
+$('btnRecDel').onclick = function(){ delRec(key()); recUI(); };
 $('btnHide').onclick = function(){ S.hide = !S.hide; applySettings(); staticLabels(); renderStep(); };
 $('btnArt').onclick = function(){ S.art = !S.art; applySettings(); staticLabels(); renderStep(); };
 $('btnList').onclick = openList;
@@ -600,7 +693,7 @@ document.addEventListener('keydown', function(e){
 });
 
 window.__mananam = {toDeva: toDeva};
-applySettings(); refreshVoices(); renderLibrary();
+applySettings(); refreshVoices(); renderLibrary(); loadRecs();
 if('serviceWorker' in navigator && location.protocol !== 'file:')
   window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
 })();

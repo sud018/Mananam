@@ -36,6 +36,18 @@ Progress, bookmarks and notes are kept separately for each text.
 - **Listen to whole anuvakam** plays mantra → meaning → next mantra … to the end, turning the pages by itself. ⚙ Settings lets you choose mantra + meaning, mantra only or meaning only, the speed, and the voices.
 - iPhone: download voices in Settings → Accessibility → Spoken Content → Voices (Telugu, and Hindi for mantras). Windows: Microsoft Edge has Telugu and Hindi voices; Chrome on Windows has no Telugu voice.
 
+## Natural-sounding audio (recommended)
+Phone voices for Telugu and Sanskrit sound robotic. To get natural Microsoft neural voices on every device:
+1. Install Python from python.org (tick "Add python.exe to PATH").
+2. Double-click `tools\make_audio.bat`. It makes ~525 MP3 files in `audio\rudram\` (about 10–20 minutes; you can stop and restart, finished files are kept).
+   - Meanings: Telugu "Shruti" (female). For a male voice run `python tools\make_audio.py --male`.
+   - Mantras: Hindi "Madhur" reading the Sanskrit. This is clear pronunciation, not Vedic chanting.
+3. Upload: `git add audio` → `git commit -m "Add audio"` → `git push`.
+The app plays these files automatically; where a file is missing it uses the phone's voice.
+
+## Your own chanting
+In any mantra, tap **🎙 Record my chanting**, chant, tap Stop. From then on that mantra plays in your voice (in single play and in whole-anuvakam play). Recordings stay on that phone only.
+
 ## Language of buttons
 ⚙ Settings → Button language: తెలుగు or English. The mantras and meanings stay in Telugu.
 
