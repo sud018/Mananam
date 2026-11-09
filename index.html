@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="te">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="మననం">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1e2347">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+Telugu:wght@400;600&family=Noto+Sans+Telugu:wght@400;500&display=swap">
+<title>మననం</title>
+<style>
+:root{
+  --ash:#ebe9e5; --ash-2:#f6f5f2; --indigo:#1e2347; --ink:#1a1c33;
+  --kumkum:#b3122e; --turmeric:#d99a1e; --bilva:#2c5c4d; --muted:#6b6a72; --rule:#d3d0ca;
+  --art-line:#1e2347; --art-accent:#d99a1e; --art-soft:#d9d4ea; --art-bg:#f6f5f2;
+  --scale:1;
+  --serif:"Telugu Sangam MN","Noto Serif Telugu","Gautami",serif;
+  --sans:"Kohinoor Telugu","Noto Sans Telugu","Telugu MN",system-ui,sans-serif;
+}
+body.dark{
+  --ash:#12142a; --ash-2:#1b1e3a; --indigo:#0b0d1f; --ink:#ece8de;
+  --kumkum:#ff5a6e; --turmeric:#f2b64a; --bilva:#9fd6c0; --muted:#a3a2b4; --rule:#2e3156;
+  --art-line:#e9e2cf; --art-accent:#f2b64a; --art-soft:#2c3060; --art-bg:#1b1e3a;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--ash);color:var(--ink);font-family:var(--sans);line-height:1.6}
+body{padding-bottom:env(safe-area-inset-bottom)}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
+:focus-visible{outline:3px solid var(--turmeric);outline-offset:2px}
+@media (prefers-reduced-motion:no-preference){ .fade{animation:fade .35s ease both} @keyframes fade{from{opacity:0}to{opacity:1}} }
+
+.band{position:sticky;top:0;z-index:5;background:var(--indigo);color:#f3efe6;padding:calc(env(safe-area-inset-top) + 6px) 10px 0}
+.band-row{display:flex;align-items:center;gap:4px;max-width:720px;margin:0 auto}
+.band h1{flex:1;margin:0;font:600 1.05rem/1.3 var(--serif);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ib{min-width:44px;height:44px;border-radius:10px;font-size:1.2rem;color:#f3efe6}
+.ib:active{background:rgba(255,255,255,.12)}
+.ib.ghost{visibility:hidden}
+.tri{display:block;height:16px;max-width:720px;margin:4px auto 0;position:relative}
+.tri::before{content:"";position:absolute;left:18%;right:18%;top:2px;height:12px;background:repeating-linear-gradient(to bottom,rgba(243,239,230,.85) 0 2px,transparent 2px 5px)}
+.tri::after{content:"";position:absolute;left:50%;top:3px;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:var(--kumkum);box-shadow:0 0 0 2px var(--indigo)}
+.prog{height:3px;background:rgba(255,255,255,.12);max-width:720px;margin:4px auto 0}
+.prog i{display:block;height:100%;background:var(--turmeric);width:0;transition:width .25s}
+
+.wrap{max-width:720px;margin:0 auto;padding:16px 18px 48px}
+.hidden{display:none!important}
+
+.hero{text-align:center;padding:26px 6px 10px}
+.hero .om{font:400 4.2rem/1 var(--serif);color:var(--kumkum)}
+.hero h2{margin:6px 0 2px;font:600 2rem/1.25 var(--serif);color:var(--indigo)}
+body.dark .hero h2{color:var(--ink)}
+.hero p{margin:0 auto;max-width:30em;color:var(--muted)}
+.divider,.mrule{height:14px;margin:18px auto;max-width:200px;position:relative}
+.mrule{max-width:150px;margin:16px auto 14px}
+.divider::before,.mrule::before{content:"";position:absolute;inset:1px 0;background:repeating-linear-gradient(to bottom,var(--rule) 0 2px,transparent 2px 5px)}
+.divider::after,.mrule::after{content:"";position:absolute;left:50%;top:2px;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:var(--kumkum);box-shadow:0 0 0 3px var(--ash)}
+.resume{display:flex;align-items:center;gap:12px;width:100%;margin:6px 0 14px;padding:14px 16px;border-radius:14px;background:var(--indigo);color:#f3efe6;text-align:left}
+body.dark .resume{background:#2a2e5c}
+.resume b{display:block;font:600 1.02rem var(--serif)}
+.resume small{opacity:.8}
+.resume .lamp{width:30px;height:30px;flex:none}
+.text-row{display:flex;align-items:center;gap:14px;width:100%;padding:16px 4px;border-bottom:1px solid var(--rule);text-align:left}
+.text-row .sig{width:52px;height:52px;flex:none;border-radius:50%;display:grid;place-items:center;font:400 1.7rem var(--serif);color:#f3efe6;background:var(--indigo)}
+body.dark .text-row .sig{background:#2a2e5c}
+.text-row b{display:block;font:600 1.18rem/1.35 var(--serif)}
+.text-row small{color:var(--muted)}
+.text-row[disabled]{opacity:.45;cursor:default}
+.soon{font-size:.82rem;color:var(--muted)}
+.foot{color:var(--muted);font-size:.85rem;text-align:center;margin-top:30px}
+
+.part-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:26px 0 4px;border-bottom:2px solid var(--kumkum);padding-bottom:4px}
+.part-h h3{margin:0;font:600 1.45rem/1.3 var(--serif);color:var(--kumkum)}
+.part-h span{color:var(--muted);font-size:.88rem}
+.unit-row{display:flex;align-items:center;gap:12px;width:100%;padding:10px 2px;border-bottom:1px solid var(--rule);text-align:left}
+.unit-row .thumb{width:78px;flex:none;border-radius:8px;overflow:hidden;line-height:0}
+.unit-row .thumb svg{width:100%;height:auto}
+.unit-row .t{flex:1;min-width:0}
+.unit-row b{display:block;font:600 1.05rem/1.35 var(--serif)}
+.unit-row small{display:block;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dots{display:flex;gap:3px;margin-top:5px;flex-wrap:wrap}
+.dots i{width:6px;height:6px;border-radius:50%;background:var(--rule)}
+.dots i.r{background:var(--turmeric)}
+
+.meta{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:.92rem}
+input[type=range]{width:100%;accent-color:var(--kumkum);height:32px;margin:2px 0 6px}
+.art{margin:6px 0 10px;border-radius:14px;overflow:hidden;line-height:0}
+.art svg{width:100%;height:auto}
+.art-cap{font:400 .98rem/1.5 var(--serif);color:var(--muted);text-align:center;margin:0 0 14px}
+.essence{border-left:3px solid var(--turmeric);padding:4px 0 4px 12px;margin:0 0 18px;font-size:calc(1rem*var(--scale));line-height:1.75}
+.essence h4{margin:0 0 2px;font:600 .95rem var(--serif);color:var(--turmeric)}
+.opening{text-align:center;color:var(--muted);font:400 calc(1rem*var(--scale))/1.6 var(--serif);margin-bottom:6px}
+.vnum{text-align:center;font:600 1rem var(--serif);color:var(--kumkum);margin:8px 0 4px}
+.verse{white-space:pre-line;text-align:center;font:400 calc(1.5rem*var(--scale))/1.85 var(--serif);color:var(--indigo);margin:0 0 6px;border-radius:12px;padding:2px 4px;transition:background .2s}
+body.dark .verse{color:var(--ink)}
+.meaning{font-size:calc(1.14rem*var(--scale));line-height:1.95;color:var(--bilva);border-radius:12px;padding:2px 4px;transition:background .2s}
+.speaking{background:rgba(217,154,30,.16)}
+.derived{display:block;font-size:.85rem;color:var(--muted);margin-top:8px}
+.reveal{display:block;width:100%;padding:18px;border:1.5px dashed var(--kumkum);border-radius:14px;color:var(--kumkum);font:600 1.05rem var(--serif)}
+.sumhead{text-align:center;font:600 1.25rem var(--serif);color:var(--kumkum);margin:4px 0 0}
+
+.listen{margin:22px 0 4px}
+.playall{display:block;width:100%;padding:15px;border-radius:14px;background:var(--turmeric);color:#1a1405;font:600 1.06rem var(--sans)}
+.playall.on{background:var(--kumkum);color:#fff}
+.small-play{display:flex;gap:8px;margin-top:8px}
+.small-play button{flex:1;padding:11px 6px;border-radius:12px;border:1.5px solid var(--turmeric);font:500 .98rem var(--sans)}
+.small-play button.on{background:var(--turmeric);color:#1a1405}
+.small-play button:disabled{opacity:.4}
+.status{font-size:.85rem;color:var(--muted);margin:6px 2px 0}
+.nav{display:flex;gap:10px;margin:16px 0}
+.nav button{flex:1;padding:16px;border-radius:14px;background:var(--indigo);color:#f3efe6;font:600 1.08rem var(--serif)}
+body.dark .nav button{background:#2a2e5c}
+.nav button[disabled]{opacity:.3}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:9px 13px;border:1px solid var(--rule);border-radius:999px;font-size:.95rem;background:var(--ash-2)}
+.chip[aria-pressed=true]{background:var(--kumkum);border-color:var(--kumkum);color:#fff}
+.note{margin-top:20px}
+.note label{display:block;font:600 .95rem var(--serif);color:var(--muted);margin-bottom:6px}
+textarea{width:100%;min-height:84px;border:1px solid var(--rule);border-radius:12px;padding:10px 12px;background:var(--ash-2);color:var(--ink);font:inherit;font-size:1rem}
+
+.sheet{position:fixed;inset:0;z-index:20;background:rgba(10,12,30,.5);display:none}
+.sheet.open{display:block}
+.sheet .panel{position:absolute;left:0;right:0;bottom:0;max-height:86vh;overflow:auto;background:var(--ash);border-radius:20px 20px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom));max-width:720px;margin:0 auto}
+.sheet h4{margin:2px 4px 10px;font:600 1.15rem var(--serif);color:var(--kumkum)}
+.li{display:flex;gap:12px;width:100%;padding:12px 6px;border-bottom:1px solid var(--rule);text-align:left;font:400 1rem var(--serif)}
+.li b{min-width:2em;color:var(--kumkum)}
+.li[aria-current=true]{background:var(--ash-2)}
+.set{padding:12px 2px;border-bottom:1px solid var(--rule)}
+.set > label,.set > span{display:block;font:600 .98rem var(--serif);margin-bottom:6px}
+.set small{display:block;color:var(--muted);font-size:.85rem;margin-top:6px;line-height:1.5}
+.seg{display:flex;border:1px solid var(--rule);border-radius:12px;overflow:hidden}
+.seg button{flex:1;padding:10px 4px;font-size:.93rem;background:var(--ash-2)}
+.seg button[aria-pressed=true]{background:var(--indigo);color:#f3efe6}
+body.dark .seg button[aria-pressed=true]{background:#2a2e5c}
+.set select{width:100%;padding:11px 8px;border-radius:12px;border:1px solid var(--rule);background:var(--ash-2);color:var(--ink);font:inherit}
+.done{display:block;width:100%;margin-top:14px;padding:14px;border-radius:12px;background:var(--indigo);color:#f3efe6;font:600 1rem var(--sans)}
+body.dark .done{background:#2a2e5c}
+.err{color:var(--kumkum);text-align:center;padding:30px 10px}
+</style>
+</head>
+<body>
+<header class="band">
+  <div class="band-row">
+    <button class="ib ghost" id="btnBack">←</button>
+    <h1 id="title">మననం</h1>
+    <button class="ib" id="btnSettings">⚙</button>
+  </div>
+  <span class="tri" aria-hidden="true"></span>
+  <div class="prog" aria-hidden="true"><i id="progBar"></i></div>
+</header>
+
+<main>
+<div class="wrap" id="library"></div>
+<div class="wrap hidden" id="contents"></div>
+<div class="wrap hidden" id="reader">
+  <div class="meta"><span id="where"></span><span id="count"></span></div>
+  <input type="range" id="slider" min="1" max="1" value="1">
+  <div id="topArea"></div>
+  <div id="verseArea"></div>
+  <div class="mrule" aria-hidden="true"></div>
+  <div id="meaningArea"></div>
+  <div class="listen">
+    <button class="playall" id="btnAll"></button>
+    <div class="small-play">
+      <button id="btnMantra"></button>
+      <button id="btnMeaning"></button>
+    </div>
+    <div class="status" id="voiceStatus"></div>
+  </div>
+  <div class="nav">
+    <button id="btnPrev"></button>
+    <button id="btnNext"></button>
+  </div>
+  <div class="chips">
+    <button class="chip" id="btnMark" aria-pressed="false"></button>
+    <button class="chip" id="btnList"></button>
+    <button class="chip" id="btnHide" aria-pressed="false"></button>
+    <button class="chip" id="btnArt" aria-pressed="true"></button>
+  </div>
+  <div class="note">
+    <label for="noteBox" id="noteLabel"></label>
+    <textarea id="noteBox"></textarea>
+  </div>
+</div>
+</main>
+
+<div class="sheet" id="sheet"><div class="panel" id="panel" role="dialog"></div></div>
+
+<script src="library.js"></script>
+<script>
+(function(){
+"use strict";
+var LIB = window.MANANAM_LIBRARY || [], OWNER = window.MANANAM_OWNER || null;
+window.MANANAM_TEXTS = window.MANANAM_TEXTS || {};
+window.MANANAM_ART = window.MANANAM_ART || {};
+var $ = function(id){ return document.getElementById(id); };
+function load(k, def){ try{ var v = localStorage.getItem('mananam.'+k); return v ? JSON.parse(v) : def; }catch(e){ return def; } }
+function save(k, v){ try{ localStorage.setItem('mananam.'+k, JSON.stringify(v)); }catch(e){} }
+var DEF = {scale:1, dark:false, rate:1, hide:false, art:true, lang:'te', mode:'both', mantraVoice:'auto', meaningVoice:'auto'};
+var S = Object.assign({}, DEF, load('settings', {}));
+var LAST = load('last', null), MARKS = load('marks', {}), NOTES = load('notes', {}), READ = load('read', {});
+var T = null, ART = {}, cur = {part:null, unit:null, idx:0}, revealed = false, screen = 'library';
+
+/* ---------- button text: Telugu or English ---------- */
+var STR = {
+ te:{app:'మననం', tagline:'మంత్రం పఠించండి, దాని అర్థం తెలుసుకోండి, ఆ భావాన్ని అనుభూతి చెందండి.',
+   cont:'కొనసాగించండి', fromLeft:'మీరు ఆపిన చోటు నుండి', soon:'త్వరలో', mantras:'మంత్రాలు', mantra:'మంత్రం',
+   summary:'సారాంశం', wholeOf:'ఈ {u} మొత్తం భావం', spirit:'ఈ {u} భావం', intro:'పరిచయం', part:'భాగం',
+   reveal:'పఠించారా? అర్థం చూపించండి', derived:'పుస్తకంలో ఈ మంత్రానికి విడిగా అర్థం ఇవ్వలేదు; ఈ అనువాకం సారాంశం నుండి తీసుకున్నది.',
+   all:'▶ {u} మొత్తం వినండి', allStop:'■ ఆపండి', mantraBtn:'▶ మంత్రం వినండి', meaningBtn:'▶ అర్థం వినండి', stop:'■ ఆపండి',
+   prev:'◀ మునుపటి', next:'తరువాతి ▶', mark:'☆ గుర్తుంచు', marked:'★ గుర్తుంచాను', list:'☰ అన్ని మంత్రాలు',
+   hide:'ముందు పఠించి, తర్వాత అర్థం', art:'చిత్రం చూపించు', note:'నా భావన', notePh:'ఈ మంత్రం పఠించినప్పుడు మీకు కలిగిన భావన రాసుకోండి',
+   back:'వెనుకకు', settings:'అమరికలు', lang:'బటన్ల భాష', size:'అక్షరాల పరిమాణం', night:'రాత్రి రంగులు', on:'ఆన్', off:'ఆఫ్',
+   mode:'అనువాకం మొత్తం వింటున్నప్పుడు', both:'మంత్రం + అర్థం', mOnly:'మంత్రం మాత్రమే', aOnly:'అర్థం మాత్రమే',
+   speed:'చదివే వేగం', mVoice:'మంత్రం చదివే వాయిస్', aVoice:'అర్థం చదివే వాయిస్', auto:'స్వయంగా ఎంచుకో',
+   voiceHelp:'సంస్కృత మంత్రాలకు హిందీ లేదా సంస్కృత వాయిస్ బాగుంటుంది. ఇది సాధారణ ఉచ్చారణ మాత్రమే, వేద స్వరాలతో పఠనం కాదు.',
+   noTe:'తెలుగు వాయిస్ లేదు. iPhone: Settings → Accessibility → Spoken Content → Voices → Telugu. Windows లో Microsoft Edge బ్రౌజర్ వాడండి.',
+   noVoice:'ఈ బ్రౌజర్‌లో వినిపించే సౌకర్యం లేదు.', done:'సరే', copy:'వ్యక్తిగత ప్రతి', listT:'మంత్రాల జాబితా', jump:'మంత్రానికి వెళ్ళండి',
+   unitsOf:'{n} {u}లు', missing:'ఈ గ్రంథం తెరవలేకపోయాము. ఈ ఫైల్ ఉందో చూడండి: '},
+ en:{app:'Mananam', tagline:'Recite the mantra, learn its meaning, feel what it says.',
+   cont:'Continue', fromLeft:'from where you stopped', soon:'Coming soon', mantras:'mantras', mantra:'Mantra',
+   summary:'Summary', wholeOf:'Overall meaning of this {u}', spirit:'Spirit of this {u}', intro:'Introduction', part:'section',
+   reveal:'Recited it? Show the meaning', derived:'The book gives no separate meaning for this mantra; this is taken from the anuvakam summary.',
+   all:'▶ Listen to whole {u}', allStop:'■ Stop', mantraBtn:'▶ Listen to mantra', meaningBtn:'▶ Listen to meaning', stop:'■ Stop',
+   prev:'◀ Previous', next:'Next ▶', mark:'☆ Bookmark', marked:'★ Bookmarked', list:'☰ All mantras',
+   hide:'Recite first, meaning after', art:'Show picture', note:'My reflection', notePh:'Write what you felt while reciting this mantra',
+   back:'Back', settings:'Settings', lang:'Button language', size:'Text size', night:'Night colours', on:'On', off:'Off',
+   mode:'When playing the whole anuvakam', both:'Mantra + meaning', mOnly:'Mantra only', aOnly:'Meaning only',
+   speed:'Reading speed', mVoice:'Voice for mantras', aVoice:'Voice for meanings', auto:'Choose automatically',
+   voiceHelp:'A Hindi or Sanskrit voice suits the Sanskrit mantras. It is plain pronunciation, not Vedic chanting with svaras.',
+   noTe:'No Telugu voice found. iPhone: Settings → Accessibility → Spoken Content → Voices → Telugu. On Windows, use the Microsoft Edge browser.',
+   noVoice:'This browser cannot read aloud.', done:'Done', copy:'Personal copy', listT:'All mantras', jump:'Go to mantra',
+   unitsOf:'{n} {u}s', missing:'Could not open this text. Check that this file exists: '}
+};
+function t(k, u){ var s = (STR[S.lang] || STR.te)[k] || STR.te[k] || k; return u === undefined ? s : s.replace('{u}', u); }
+function en(){ return S.lang === 'en'; }
+function tx(obj, f){ return (en() && obj[f+'En']) || obj[f]; }
+
+function libEntry(id){ return LIB.filter(function(e){ return e.id === id; })[0]; }
+function findPart(id){ return T.parts.filter(function(p){ return p.id === id; })[0]; }
+function findUnit(p, n){ return p.units.filter(function(u){ return u.n === n; })[0]; }
+function steps(u){ var s = u.items.map(function(it){ return {kind:'v', v:it}; }); if(u.summary) s.push({kind:'s', text:u.summary}); return s; }
+function ukey(p,u){ return T.id+'/'+p.id+'/'+u.n; }
+function key(){ return ukey(cur.part,cur.unit)+'/'+(cur.idx+1); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function single(p){ return p.units.length === 1; }
+function unitLabel(p){ return (p && tx(p,'unitLabel')) || tx(T,'unitLabel') || t('part'); }
+function unitWord(p){ return (!p || single(p)) ? t('part') : unitLabel(p); }
+function unitTitle(p,u){ return single(p) ? tx(p,'name') : tx(p,'name')+', '+unitLabel(p)+' '+u.n; }
+function artFor(p,u){ return ART[p.id+'-'+u.n] || null; }
+function footer(){ return OWNER ? '<p class="foot">© '+OWNER.year+' '+esc(en() ? OWNER.en : OWNER.te)+' – '+t('copy')+'</p>' : ''; }
+
+function show(which){
+  screen = which;
+  ['library','contents','reader'].forEach(function(id){ $(id).classList.toggle('hidden', id !== which); });
+  $(which).classList.remove('fade'); void $(which).offsetWidth; $(which).classList.add('fade');
+  $('btnBack').classList.toggle('ghost', which === 'library');
+  if(which !== 'reader') $('progBar').style.width = '0';
+  window.scrollTo(0,0);
+}
+function rerender(){
+  if(screen === 'library') renderLibrary();
+  else if(screen === 'contents') renderContents();
+  else { staticLabels(); renderStep(); }
+}
+function loadScript(src, done){ var s = document.createElement('script'); s.src = src; s.onload = function(){ done(true); }; s.onerror = function(){ done(false); }; document.head.appendChild(s); }
+function loadText(id, done){
+  if(window.MANANAM_TEXTS[id]) return done(window.MANANAM_TEXTS[id]);
+  loadScript('texts/'+encodeURIComponent(id)+'/text.js', function(){
+    var tt = window.MANANAM_TEXTS[id] || null;
+    loadScript('texts/'+encodeURIComponent(id)+'/art.js', function(){ done(tt); });
+  });
+}
+function applySettings(){
+  document.documentElement.style.setProperty('--scale', S.scale);
+  document.body.classList.toggle('dark', !!S.dark);
+  document.documentElement.lang = S.lang;
+  document.querySelector('meta[name=theme-color]').content = S.dark ? '#0b0d1f' : '#1e2347';
+  save('settings', S);
+}
+function staticLabels(){
+  $('btnBack').setAttribute('aria-label', t('back'));
+  $('btnSettings').setAttribute('aria-label', t('settings'));
+  $('slider').setAttribute('aria-label', t('jump'));
+  $('btnPrev').textContent = t('prev'); $('btnNext').textContent = t('next');
+  $('btnList').textContent = t('list'); $('btnHide').textContent = t('hide'); $('btnArt').textContent = t('art');
+  $('btnHide').setAttribute('aria-pressed', !!S.hide); $('btnArt').setAttribute('aria-pressed', !!S.art);
+  $('noteLabel').textContent = t('note'); $('noteBox').placeholder = t('notePh');
+  setPlayUI(); voiceStatus();
+}
+var LAMP = '<svg class="lamp" viewBox="0 0 30 30" aria-hidden="true"><path d="M15 3c4 5 5 8 3 11-1 1.5-5 1.5-6 0-2-3-1-6 3-11z" fill="#f2b64a"/><path d="M4 18h22l-4 6H8z" fill="#d9d4ea"/></svg>';
+
+/* ---------- library ---------- */
+function renderLibrary(){
+  stopSpeech();
+  $('title').textContent = t('app'); document.title = t('app');
+  var h = '<div class="hero"><div class="om" aria-hidden="true">ॐ</div><h2>'+t('app')+'</h2><p>'+t('tagline')+'</p></div><div class="divider" aria-hidden="true"></div>';
+  var le = LAST && libEntry(LAST.text);
+  if(le && le.ready) h += '<button class="resume" id="resume">'+LAMP+'<span><b>'+t('cont')+'</b><small>'+esc(tx(le,'title'))+' – '+t('fromLeft')+'</small></span></button>';
+  LIB.forEach(function(e){
+    h += '<button class="text-row" data-id="'+esc(e.id)+'"'+(e.ready?'':' disabled')+'>'+
+         '<span class="sig" aria-hidden="true">'+esc(e.icon || 'ॐ')+'</span>'+
+         '<span style="flex:1"><b>'+esc(tx(e,'title'))+'</b><small>'+esc(tx(e,'subtitle') || '')+'</small></span>'+
+         (e.ready ? '' : '<span class="soon">'+t('soon')+'</span>')+'</button>';
+  });
+  $('library').innerHTML = h + footer();
+  show('library');
+  Array.prototype.forEach.call($('library').querySelectorAll('.text-row:not([disabled])'), function(b){ b.onclick = function(){ openText(b.getAttribute('data-id')); }; });
+  var r = $('resume'); if(r) r.onclick = function(){ openText(LAST.text, function(){ openUnit(LAST.part, LAST.unit, LAST.idx); }); };
+}
+
+/* ---------- contents ---------- */
+function openText(id, then){
+  loadText(id, function(tt){
+    if(!tt){ $('contents').innerHTML = '<div class="err">'+t('missing')+'texts/'+esc(id)+'/text.js</div>'; show('contents'); return; }
+    T = tt; ART = window.MANANAM_ART[id] || {};
+    if(then) then(); else renderContents();
+  });
+}
+function renderContents(){
+  stopSpeech();
+  $('title').textContent = tx(T,'title');
+  var h = '<div class="hero"><h2>'+esc(tx(T,'title'))+'</h2><p>'+esc(tx(T,'subtitle') || '')+'</p></div>';
+  var pos = load('pos.'+T.id, null), pp = pos && findPart(pos.part), pu = pp && findUnit(pp, pos.unit);
+  if(pu && pu.items.length) h += '<button class="resume" id="resumeText">'+LAMP+'<span><b>'+t('cont')+'</b><small>'+esc(unitTitle(pp,pu))+', '+t('mantra')+' '+(pos.idx+1)+'</small></span></button>';
+  T.parts.forEach(function(p){
+    var n = p.units.reduce(function(a,u){ return a+u.items.length; },0);
+    h += '<div class="part-h"><h3>'+esc(tx(p,'name'))+'</h3><span>'+(single(p)?'':t('unitsOf').replace('{n}',p.units.length).replace('{u}',unitLabel(p))+', ')+n+' '+t('mantras')+'</span></div>';
+    p.units.forEach(function(u){
+      var a = artFor(p,u), st = steps(u), rd = READ[ukey(p,u)] || {};
+      var dots = st.map(function(_,i){ return '<i'+(rd[i+1]?' class="r"':'')+'></i>'; }).join('');
+      var title = single(p) ? tx(p,'name') : unitLabel(p)+' '+u.n;
+      h += '<button class="unit-row" data-p="'+esc(p.id)+'" data-u="'+u.n+'"'+(u.items.length?'':' disabled')+'>'+
+           (a ? '<span class="thumb" aria-hidden="true">'+a.svg+'</span>' : '')+
+           '<span class="t"><b>'+esc(title)+'</b><small>'+esc(a ? a.cap : (u.name || ''))+'</small><span class="dots">'+dots+'</span></span></button>';
+    });
+  });
+  $('contents').innerHTML = h + footer();
+  show('contents');
+  Array.prototype.forEach.call($('contents').querySelectorAll('.unit-row:not([disabled])'), function(b){ b.onclick = function(){ openUnit(b.getAttribute('data-p'), +b.getAttribute('data-u'), 0); }; });
+  var r = $('resumeText'); if(r) r.onclick = function(){ openUnit(pos.part, pos.unit, pos.idx); };
+}
+
+/* ---------- reader ---------- */
+function openUnit(pid, n, idx){
+  var p = findPart(pid), u = p && findUnit(p, n);
+  if(!u || !u.items.length){ renderContents(); return; }
+  cur.part = p; cur.unit = u;
+  var total = steps(u).length;
+  cur.idx = Math.max(0, Math.min(idx || 0, total-1));
+  $('slider').max = total;
+  show('reader'); staticLabels(); renderStep();
+}
+function renderStep(){
+  var p = cur.part, u = cur.unit, st = steps(u), item = st[cur.idx], a = artFor(p,u), w = unitWord(p);
+  $('title').textContent = unitTitle(p,u);
+  $('where').textContent = item.kind === 'v' ? (tx(T,'itemLabel') || t('mantra'))+' '+item.v.n+' / '+u.items.length : t('summary');
+  $('count').textContent = (cur.idx+1)+' / '+st.length;
+  $('slider').value = cur.idx+1;
+  $('progBar').style.width = ((cur.idx+1)/st.length*100)+'%';
+  revealed = !S.hide || playingAll;
+  var top = '';
+  if(S.art && a && (cur.idx === 0 || item.kind === 's')) top += '<div class="art" aria-hidden="true">'+a.svg+'</div><p class="art-cap">'+esc(a.cap)+'</p>';
+  if(cur.idx === 0 && u.essence) top += '<div class="essence"><h4>'+t('spirit', w)+'</h4>'+esc(u.essence)+'</div>';
+  if(cur.idx === 0 && u.intro) top += '<div class="essence"><h4>'+t('intro')+'</h4>'+esc(u.intro)+'</div>';
+  $('topArea').innerHTML = top;
+  if(item.kind === 'v'){
+    $('verseArea').innerHTML = (cur.idx === 0 && u.opening ? '<div class="opening">'+esc(u.opening)+'</div>' : '')+
+      '<div class="vnum">'+item.v.n+'</div><div class="verse" id="verseText">'+esc(item.v.text)+'</div>';
+  }else{
+    $('verseArea').innerHTML = '<div class="sumhead">'+t('summary')+'</div><div class="opening">'+t('wholeOf', w)+'</div>';
+  }
+  drawMeaning(item);
+  $('btnMantra').disabled = item.kind !== 'v';
+  $('btnPrev').disabled = cur.idx === 0;
+  $('btnNext').disabled = cur.idx === st.length-1;
+  var marked = !!MARKS[key()];
+  $('btnMark').textContent = marked ? t('marked') : t('mark');
+  $('btnMark').setAttribute('aria-pressed', marked);
+  $('noteBox').value = NOTES[key()] || '';
+  setPlayUI();
+  save('pos.'+T.id, {part:p.id, unit:u.n, idx:cur.idx});
+  LAST = {text:T.id, part:p.id, unit:u.n, idx:cur.idx}; save('last', LAST);
+}
+function markRead(){ var k = ukey(cur.part,cur.unit); READ[k] = READ[k] || {}; READ[k][cur.idx+1] = 1; save('read', READ); }
+function drawMeaning(item){
+  var text = item.kind === 'v' ? item.v.meaning : item.text;
+  if(revealed){
+    markRead();
+    $('meaningArea').innerHTML = '<div class="meaning" id="meaningText">'+esc(text || '')+
+      (item.kind === 'v' && item.v.derived ? '<span class="derived">'+t('derived')+'</span>' : '')+'</div>';
+  }else{
+    $('meaningArea').innerHTML = '<button class="reveal" id="reveal">'+t('reveal')+'</button>';
+    $('reveal').onclick = function(){ revealed = true; drawMeaning(item); };
+  }
+}
+function go(d){ var n = cur.idx + d; if(n < 0 || n >= steps(cur.unit).length) return; stopSpeech(); cur.idx = n; renderStep(); window.scrollTo(0,0); }
+function goTo(i){ stopSpeech(); cur.idx = i; renderStep(); window.scrollTo(0,0); }
+
+/* ---------- voices ---------- */
+var hasTTS = 'speechSynthesis' in window, VOICES = [];
+function refreshVoices(){ if(hasTTS) VOICES = speechSynthesis.getVoices() || []; voiceStatus(); }
+if(hasTTS) speechSynthesis.onvoiceschanged = refreshVoices;
+function byLang(re){ return VOICES.filter(function(v){ return re.test(v.lang); }); }
+function prefer(list){   // natural / online / enhanced voices usually sound better
+  var score = function(v){ return /natural|online|enhanced|premium|google/i.test(v.name) ? 0 : 1; };
+  return list.slice().sort(function(a,b){ return score(a)-score(b); })[0] || null;
+}
+function voiceByURI(uri){ return VOICES.filter(function(v){ return v.voiceURI === uri; })[0] || null; }
+function teluguVoice(){ return (S.meaningVoice !== 'auto' && voiceByURI(S.meaningVoice)) || prefer(byLang(/^te([-_]|$)/i)); }
+function mantraVoice(){
+  if(S.mantraVoice !== 'auto'){ var v = voiceByURI(S.mantraVoice); if(v) return v; }
+  return prefer(byLang(/^sa([-_]|$)/i)) || prefer(byLang(/^hi([-_]|$)/i)) || prefer(byLang(/^mr([-_]|$)/i)) || teluguVoice();
+}
+function voiceStatus(){
+  var el = $('voiceStatus'); if(!el) return;
+  el.textContent = !hasTTS ? t('noVoice') : (VOICES.length && !teluguVoice() ? t('noTe') : '');
+}
+/* Telugu script → Devanagari, so a Hindi/Sanskrit voice can read the Sanskrit mantra */
+function toDeva(s){
+  s = s.replace(/గ్ం/g, 'ం').replace(/[()]/g, ' ').replace(/శ్లో॥/g, '');
+  var out = '';
+  for(var i = 0; i < s.length; i++){
+    var c = s.charCodeAt(i);
+    if(c >= 0x0C00 && c <= 0x0C7F){
+      if(c === 0x0C46) c = 0x0C47;       // short e sign → e
+      else if(c === 0x0C4A) c = 0x0C4B;  // short o sign → o
+      else if(c === 0x0C0E) c = 0x0C0F;  // short e → e
+      else if(c === 0x0C12) c = 0x0C13;  // short o → o
+      else if(c === 0x0C31) c = 0x0C30;  // ఱ → ర
+      out += String.fromCharCode(c - 0x0300);
+    } else out += s[i];
+  }
+  return out;
+}
+function utter(text, kind){
+  var v = kind === 'mantra' ? mantraVoice() : teluguVoice();
+  var lang = v ? v.lang : (kind === 'mantra' ? 'hi-IN' : 'te-IN');
+  if(kind === 'mantra' && !/^te/i.test(lang)) text = toDeva(text);
+  var u = new SpeechSynthesisUtterance(text);
+  if(v) u.voice = v;
+  u.lang = lang; u.rate = S.rate * (kind === 'mantra' ? 0.9 : 1);
+  return u;
+}
+function chunks(text){
+  var parts = String(text).replace(/([।॥])\s*\n/g, '$1 ').replace(/\n/g, ' । ').match(/[^.!?।॥]+[.!?।॥]*/g) || [String(text)], out = [], buf = '';
+  parts.forEach(function(p){ if((buf+p).length > 180 && buf){ out.push(buf); buf = p; } else buf += p; });
+  if(buf) out.push(buf);
+  return out.map(function(s){ return s.trim(); }).filter(function(s){ return /[ఀ-౿A-Za-z]/.test(s); });
+}
+
+/* ---------- playback ---------- */
+var token = 0, playing = null, playingAll = false, wake = null;
+function setPlayUI(){
+  $('btnAll').textContent = playingAll ? t('allStop') : t('all', unitWord(cur.part));
+  $('btnAll').classList.toggle('on', playingAll);
+  $('btnMantra').textContent = playing === 'mantra' && !playingAll ? t('stop') : t('mantraBtn');
+  $('btnMeaning').textContent = playing === 'meaning' && !playingAll ? t('stop') : t('meaningBtn');
+  $('btnMantra').classList.toggle('on', playing === 'mantra');
+  $('btnMeaning').classList.toggle('on', playing === 'meaning');
+  var vt = $('verseText'), mt = $('meaningText');
+  if(vt) vt.classList.toggle('speaking', playing === 'mantra');
+  if(mt) mt.classList.toggle('speaking', playing === 'meaning');
+}
+function stopSpeech(){
+  token++; playing = null; playingAll = false;
+  try{ speechSynthesis.cancel(); }catch(e){}
+  if(wake){ try{ wake.release(); }catch(e){} wake = null; }
+  setPlayUI();
+}
+function sayQueue(list, my, done){   // list of {text, kind}
+  var i = 0;
+  (function next(){
+    if(my !== token) return;
+    if(i >= list.length){ done(); return; }
+    var item = list[i++]; playing = item.kind; setPlayUI();
+    var u = utter(item.text, item.kind);
+    u.onend = function(){ setTimeout(next, 150); };
+    u.onerror = function(e){ if(my === token && e.error !== 'interrupted' && e.error !== 'canceled') setTimeout(next, 150); };
+    speechSynthesis.speak(u);
+  })();
+}
+function currentParts(mode){
+  var it = steps(cur.unit)[cur.idx], list = [];
+  if(it.kind === 'v'){
+    if(mode !== 'meaning') chunks(it.v.text).forEach(function(c){ list.push({text:c, kind:'mantra'}); });
+    if(mode !== 'mantra') chunks(it.v.meaning).forEach(function(c){ list.push({text:c, kind:'meaning'}); });
+  }else if(mode !== 'mantra'){
+    chunks(it.text).forEach(function(c){ list.push({text:c, kind:'meaning'}); });
+  }
+  return list;
+}
+function playOne(kind){
+  if(!hasTTS) return;
+  if(playing === kind && !playingAll){ stopSpeech(); return; }
+  stopSpeech(); refreshVoices();
+  if(kind === 'meaning' && !revealed){ revealed = true; drawMeaning(steps(cur.unit)[cur.idx]); }
+  var my = ++token;
+  sayQueue(currentParts(kind), my, function(){ playing = null; setPlayUI(); });
+}
+function playAll(){
+  if(!hasTTS) return;
+  if(playingAll){ stopSpeech(); return; }
+  stopSpeech(); refreshVoices();
+  playingAll = true;
+  try{ if(navigator.wakeLock) navigator.wakeLock.request('screen').then(function(w){ wake = w; }).catch(function(){}); }catch(e){}
+  var my = ++token, mode = S.mode === 'mOnly' ? 'mantra' : (S.mode === 'aOnly' ? 'meaning' : 'both');
+  if(!revealed){ revealed = true; drawMeaning(steps(cur.unit)[cur.idx]); }
+  setPlayUI();
+  (function step(){
+    if(my !== token) return;
+    sayQueue(currentParts(mode), my, function(){
+      if(my !== token) return;
+      if(cur.idx < steps(cur.unit).length-1){
+        setTimeout(function(){ if(my !== token) return; cur.idx++; renderStep(); window.scrollTo(0,0); step(); }, 700);
+      }else stopSpeech();
+    });
+  })();
+}
+
+/* ---------- sheets: jump list and settings ---------- */
+function openSheet(html, label){ $('panel').innerHTML = html; $('panel').setAttribute('aria-label', label); $('sheet').classList.add('open'); }
+function closeSheet(){ $('sheet').classList.remove('open'); }
+$('sheet').onclick = function(e){ if(e.target === $('sheet')) closeSheet(); };
+function openList(){
+  var st = steps(cur.unit), h = '<h4>'+esc(unitTitle(cur.part,cur.unit))+'</h4>';
+  st.forEach(function(it, i){
+    var label = it.kind === 'v' ? it.v.text.split('\n')[0].slice(0,36) : t('summary');
+    var mk = MARKS[ukey(cur.part,cur.unit)+'/'+(i+1)] ? ' ★' : '';
+    h += '<button class="li" data-i="'+i+'"'+(i === cur.idx ? ' aria-current="true"' : '')+'><b>'+(it.kind === 'v' ? it.v.n : '✦')+'</b><span>'+esc(label)+mk+'</span></button>';
+  });
+  openSheet(h, t('listT'));
+  Array.prototype.forEach.call($('panel').querySelectorAll('.li'), function(b){ b.onclick = function(){ closeSheet(); goTo(+b.getAttribute('data-i')); }; });
+}
+function seg(name, opts, val){
+  return '<div class="seg" data-set="'+name+'">'+opts.map(function(o){ return '<button data-v="'+o[0]+'" aria-pressed="'+(String(val) === String(o[0]))+'">'+o[1]+'</button>'; }).join('')+'</div>';
+}
+function voiceSelect(name, list, val){
+  return '<select data-sel="'+name+'"><option value="auto">'+t('auto')+'</option>'+list.map(function(v){
+    return '<option value="'+esc(v.voiceURI)+'"'+(v.voiceURI === val ? ' selected' : '')+'>'+esc(v.name)+' ('+esc(v.lang)+')</option>'; }).join('')+'</select>';
+}
+function openSettings(){
+  refreshVoices();
+  var indic = VOICES.filter(function(v){ return /^(sa|hi|mr|te|kn|ta|ne)([-_]|$)/i.test(v.lang); });
+  var tel = byLang(/^te([-_]|$)/i), mv = mantraVoice(), av = teluguVoice();
+  var h = '<h4>'+t('settings')+'</h4>'+
+    '<div class="set"><span>'+t('lang')+'</span>'+seg('lang', [['te','తెలుగు'],['en','English']], S.lang)+'</div>'+
+    '<div class="set"><span>'+t('size')+'</span>'+seg('scale', [[0.9,'అ−'],[1,'అ'],[1.2,'అ+'],[1.4,'అ++']], S.scale)+'</div>'+
+    '<div class="set"><span>'+t('night')+'</span>'+seg('dark', [[false,t('off')],[true,t('on')]], S.dark)+'</div>'+
+    '<div class="set"><span>'+t('mode')+'</span>'+seg('mode', [['both',t('both')],['mOnly',t('mOnly')],['aOnly',t('aOnly')]], S.mode)+'</div>'+
+    '<div class="set"><span>'+t('speed')+'</span>'+seg('rate', [[0.7,'0.7×'],[0.85,'0.85×'],[1,'1×'],[1.15,'1.15×']], S.rate)+'</div>'+
+    '<div class="set"><label>'+t('mVoice')+'</label>'+voiceSelect('mantraVoice', indic, S.mantraVoice)+
+      '<small>'+(mv ? '→ '+esc(mv.name) : t('noVoice'))+'<br>'+t('voiceHelp')+'</small></div>'+
+    '<div class="set"><label>'+t('aVoice')+'</label>'+voiceSelect('meaningVoice', tel, S.meaningVoice)+
+      '<small>'+(av ? '→ '+esc(av.name) : t('noTe'))+'</small></div>'+
+    '<button class="done" id="setDone">'+t('done')+'</button>';
+  openSheet(h, t('settings'));
+  Array.prototype.forEach.call($('panel').querySelectorAll('.seg button'), function(b){
+    b.onclick = function(){
+      var name = b.parentNode.getAttribute('data-set'), v = b.getAttribute('data-v');
+      S[name] = (name === 'scale' || name === 'rate') ? +v : (name === 'dark' ? v === 'true' : v);
+      applySettings(); rerender(); openSettings();
+    };
+  });
+  Array.prototype.forEach.call($('panel').querySelectorAll('select[data-sel]'), function(sel){
+    sel.onchange = function(){ S[sel.getAttribute('data-sel')] = sel.value; applySettings(); openSettings(); };
+  });
+  $('setDone').onclick = closeSheet;
+}
+
+/* ---------- wiring ---------- */
+$('btnBack').onclick = function(){ if(screen === 'reader') renderContents(); else renderLibrary(); };
+$('btnSettings').onclick = openSettings;
+$('btnPrev').onclick = function(){ go(-1); };
+$('btnNext').onclick = function(){ go(1); };
+$('slider').oninput = function(){ goTo(+this.value-1); };
+$('btnAll').onclick = playAll;
+$('btnMantra').onclick = function(){ playOne('mantra'); };
+$('btnMeaning').onclick = function(){ playOne('meaning'); };
+$('btnHide').onclick = function(){ S.hide = !S.hide; applySettings(); staticLabels(); renderStep(); };
+$('btnArt').onclick = function(){ S.art = !S.art; applySettings(); staticLabels(); renderStep(); };
+$('btnList').onclick = openList;
+$('btnMark').onclick = function(){ var k = key(); if(MARKS[k]) delete MARKS[k]; else MARKS[k] = 1; save('marks', MARKS); renderStep(); };
+$('noteBox').oninput = function(){ NOTES[key()] = this.value; save('notes', NOTES); };
+
+var sx = 0, sy = 0;
+$('reader').addEventListener('touchstart', function(e){ sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, {passive:true});
+$('reader').addEventListener('touchend', function(e){
+  var tg = e.target.tagName; if(tg === 'TEXTAREA' || tg === 'INPUT' || tg === 'SELECT') return;
+  var dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+  if(Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy)*1.6) go(dx < 0 ? 1 : -1);
+}, {passive:true});
+document.addEventListener('keydown', function(e){
+  if(screen !== 'reader' || /TEXTAREA|SELECT/.test(e.target.tagName)) return;
+  if(e.key === 'ArrowRight') go(1); else if(e.key === 'ArrowLeft') go(-1);
+  else if(e.key === ' '){ e.preventDefault(); playAll(); }
+});
+
+window.__mananam = {toDeva: toDeva};
+applySettings(); refreshVoices(); renderLibrary();
+if('serviceWorker' in navigator && location.protocol !== 'file:')
+  window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+})();
+</script>
+</body>
+</html>
