@@ -100,6 +100,18 @@ input[type=range]{width:100%;accent-color:var(--kumkum);height:32px;margin:2px 0
 body.dark .verse{color:var(--ink)}
 .meaning{font-size:calc(1.14rem*var(--scale));line-height:1.95;color:var(--bilva);border-radius:12px;padding:2px 4px;transition:background .2s}
 .speaking{background:rgba(217,154,30,.16)}
+.readbtn{display:block;width:100%;margin:8px 0 2px;padding:12px;border-radius:12px;border:1.5px solid var(--indigo);color:var(--indigo);font:600 1rem var(--sans);background:var(--ash-2)}
+body.dark .readbtn{border-color:#9aa0d8;color:#c9cdf0}
+.fullh{text-align:center;margin:6px 0 2px}
+.fullh h2{font:600 1.6rem var(--sans);color:var(--kumkum);margin:0}
+.fullu{font:600 1.02rem var(--sans);color:var(--kumkum);text-align:center;margin:26px 0 8px;letter-spacing:.02em}
+.fullu:before,.fullu:after{content:'❖';color:var(--turmeric);margin:0 10px;font-size:.8rem}
+.fullv{white-space:pre-line;text-align:center;font:400 calc(1.32rem*var(--scale))/2.05 var(--mantra);color:var(--indigo);margin:0 0 10px;padding:2px 4px;border-radius:10px;cursor:pointer}
+.fullv:active{background:var(--ash-2)}
+.fullv i{font:500 .72rem var(--sans);color:var(--muted);font-style:normal;vertical-align:super;margin-left:4px}
+body.dark .fullv{color:#e6e2d6}
+.fullbar{display:flex;gap:8px;justify-content:center;margin:10px 0 4px}
+.fullbar button{padding:9px 14px;border-radius:999px;border:1px solid var(--rule);background:var(--ash-2);font:600 .95rem var(--sans);color:var(--indigo)}
 .legend{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin:2px 0 4px}
 .legend b{font:400 1.1rem var(--mantra);color:var(--kumkum)}
 .derived{display:block;font-size:.85rem;color:var(--muted);margin-top:8px}
@@ -190,6 +202,7 @@ body.dark .done{background:#2a2e5c}
 <main>
 <div class="wrap" id="library"></div>
 <div class="wrap hidden" id="contents"></div>
+<div class="wrap hidden" id="full"></div>
 <div class="wrap hidden" id="reader">
   <div class="meta"><span id="where"></span><span id="count"></span></div>
   <input type="range" id="slider" min="1" max="1" value="1">
@@ -209,6 +222,7 @@ body.dark .done{background:#2a2e5c}
       <button id="btnRec"></button>
       <button id="btnRecA"></button>
     </div>
+    <div class="small-play"><button id="btnAddChant"></button></div>
     <div class="chips" id="recDels" style="margin-top:8px"></div>
     <div class="status" id="recStatus"></div>
   </div>
@@ -282,7 +296,7 @@ var STR = {
    rec:'🎙 మంత్రం రికార్డ్', recA:'🎙 అర్థం రికార్డ్', recStop:'■ రికార్డింగ్ ఆపండి', recAgain:'🎙 మంత్రం మళ్ళీ', recAgainA:'🎙 అర్థం మళ్ళీ',
    recDel:'🗑 మంత్రం రికార్డింగ్ తొలగించు', recDelA:'🗑 అర్థం రికార్డింగ్ తొలగించు',
    recNow:'రికార్డ్ అవుతోంది… పఠించి, ఆపండి నొక్కండి.', recHas:'ఇక్కడ మీ స్వంత గొంతు వినిపిస్తుంది.',
-   recNo:'ఈ బ్రౌజర్‌లో రికార్డింగ్ సౌకర్యం లేదు.', recDenied:'మైక్రోఫోన్ అనుమతి ఇవ్వలేదు.', chantFull:'▶ పూర్తి పఠనం వినండి (YouTube)', myFull:'▶ పూర్తి పఠనం వినండి', myUnit:'▶ ఈ {u} పఠనం వినండి', myAdd:'🎵 నా పఠనం ఆడియో జోడించు', myAdded:'{n} ఆడియో ఫైళ్ళు జోడించాను ✓', myNone:'పేర్లు సరిపోలలేదు. namakam-1.mp3, chamakam-full.mp3 వంటి పేర్లు ఉండాలి.', myDel:'🗑 పఠనం ఆడియో తొలగించు', myDelQ:'ఈ ఫోన్‌లో ఉన్న పఠనం ఆడియో అంతా తొలగించాలా?', myHave:'ఈ ఫోన్‌లో {n} పఠనం ఫైళ్ళు ఉన్నాయి', chantSpeed:'వేగం', chantMarkBtn:'⏱ మంత్రాల సమయాలు గుర్తించు', chantMarkOff:'✓ గుర్తించడం ఆపు', chantNext:'తరువాత గుర్తించాల్సినది:', chantNow:'⏱ ఈ మంత్రం ఇప్పుడు మొదలైంది', chantEnd:'⏱ పఠనం ఇక్కడ ముగిసింది', chantUndo:'↶ వెనక్కి', chantSkip:'దాటవేయి', chantCopy:'📋 సమయాలు కాపీ', chantCopied:'కాపీ అయింది – Claude కి పంపండి', chantDone:'అన్ని మంత్రాలు గుర్తించారు ✓', chantMarked:'{n} మంత్రాలకు సమయాలు ఉన్నాయి', chantOffline:'YouTube తెరవడానికి ఇంటర్నెట్ కావాలి.', chantHelp:'వీడియో ప్లే చేసి, ప్రతి మంత్రం మొదలవగానే పెద్ద బటన్ నొక్కండి. తర్వాత ఆ మంత్రం విడిగా వినవచ్చు.', missing:'ఈ గ్రంథం తెరవలేకపోయాము. ఈ ఫైల్ ఉందో చూడండి: '},
+   recNo:'ఈ బ్రౌజర్‌లో రికార్డింగ్ సౌకర్యం లేదు.', recDenied:'మైక్రోఫోన్ అనుమతి ఇవ్వలేదు.', chantFull:'▶ పూర్తి పఠనం వినండి (YouTube)', myFull:'▶ పూర్తి పఠనం వినండి', readFull:'📖 పూర్తి {p} చదవండి (స్వరాలతో)', fullTap:'ఏ మంత్రం నొక్కినా దాని అర్థం తెరుచుకుంటుంది', top:'↑ పైకి', myUnit:'▶ ఈ {u} పఠనం వినండి', myAdd:'🎵 నా పఠనం ఆడియో జోడించు', myAdded:'{n} ఆడియో ఫైళ్ళు జోడించాను ✓', myNone:'పేర్లు సరిపోలలేదు. namakam-1.mp3, chamakam-full.mp3 వంటి పేర్లు ఉండాలి.', myDel:'🗑 పఠనం ఆడియో తొలగించు', myDelQ:'ఈ ఫోన్‌లో ఉన్న పఠనం ఆడియో అంతా తొలగించాలా?', myHave:'ఈ ఫోన్‌లో {n} పఠనం ఫైళ్ళు ఉన్నాయి', chantSpeed:'వేగం', chantMarkBtn:'⏱ మంత్రాల సమయాలు గుర్తించు', chantMarkOff:'✓ గుర్తించడం ఆపు', chantNext:'తరువాత గుర్తించాల్సినది:', chantNow:'⏱ ఈ మంత్రం ఇప్పుడు మొదలైంది', chantEnd:'⏱ పఠనం ఇక్కడ ముగిసింది', chantUndo:'↶ వెనక్కి', chantSkip:'దాటవేయి', chantCopy:'📋 సమయాలు కాపీ', chantCopied:'కాపీ అయింది – Claude కి పంపండి', chantDone:'అన్ని మంత్రాలు గుర్తించారు ✓', chantMarked:'{n} మంత్రాలకు సమయాలు ఉన్నాయి', chantOffline:'YouTube తెరవడానికి ఇంటర్నెట్ కావాలి.', chantHelp:'వీడియో ప్లే చేసి, ప్రతి మంత్రం మొదలవగానే పెద్ద బటన్ నొక్కండి. తర్వాత ఆ మంత్రం విడిగా వినవచ్చు.', missing:'ఈ గ్రంథం తెరవలేకపోయాము. ఈ ఫైల్ ఉందో చూడండి: '},
  en:{app:'Mananam', tagline:'Recite the mantra, learn its meaning, feel what it says.',
    cont:'Continue', fromLeft:'from where you stopped', soon:'Coming soon', mantras:'mantras', mantra:'Mantra',
    summary:'Summary', wholeOf:'Overall meaning of this {u}', spirit:'Spirit of this {u}', intro:'Introduction', part:'section',
@@ -303,7 +317,7 @@ var STR = {
    rec:'🎙 Record mantra', recA:'🎙 Record meaning', recStop:'■ Stop recording', recAgain:'🎙 Re-record mantra', recAgainA:'🎙 Re-record meaning',
    recDel:'🗑 Delete mantra recording', recDelA:'🗑 Delete meaning recording',
    recNow:'Recording… speak, then tap Stop.', recHas:'Your own voice plays here.',
-   recNo:'This browser cannot record.', recDenied:'Microphone permission was not given.', chantFull:'▶ Full chanting (YouTube)', myFull:'▶ Full chanting', myUnit:'▶ Chanting of this {u}', myAdd:'🎵 Add my chanting audio', myAdded:'Added {n} audio files ✓', myNone:'No names matched. Files should be named like namakam-1.mp3 or chamakam-full.mp3.', myDel:'🗑 Remove chanting audio', myDelQ:'Remove all chanting audio from this phone?', myHave:'{n} chanting files on this phone', chantSpeed:'Speed', chantMarkBtn:'⏱ Mark mantra times', chantMarkOff:'✓ Stop marking', chantNext:'Next to mark:', chantNow:'⏱ This mantra starts now', chantEnd:'⏱ Chanting ends here', chantUndo:'↶ Undo', chantSkip:'Skip', chantCopy:'📋 Copy times', chantCopied:'Copied – send it to Claude', chantDone:'All mantras marked ✓', chantMarked:'{n} mantras have times', chantOffline:'YouTube needs an internet connection.', chantHelp:'Play the video and tap the big button the moment each mantra begins. Then each mantra can be played on its own.', missing:'Could not open this text. Check that this file exists: '}
+   recNo:'This browser cannot record.', recDenied:'Microphone permission was not given.', chantFull:'▶ Full chanting (YouTube)', myFull:'▶ Full chanting', readFull:'📖 Read full {p} (with svaras)', fullTap:'Tap any mantra to open its meaning', top:'↑ Top', myUnit:'▶ Chanting of this {u}', myAdd:'🎵 Add my chanting audio', myAdded:'Added {n} audio files ✓', myNone:'No names matched. Files should be named like namakam-1.mp3 or chamakam-full.mp3.', myDel:'🗑 Remove chanting audio', myDelQ:'Remove all chanting audio from this phone?', myHave:'{n} chanting files on this phone', chantSpeed:'Speed', chantMarkBtn:'⏱ Mark mantra times', chantMarkOff:'✓ Stop marking', chantNext:'Next to mark:', chantNow:'⏱ This mantra starts now', chantEnd:'⏱ Chanting ends here', chantUndo:'↶ Undo', chantSkip:'Skip', chantCopy:'📋 Copy times', chantCopied:'Copied – send it to Claude', chantDone:'All mantras marked ✓', chantMarked:'{n} mantras have times', chantOffline:'YouTube needs an internet connection.', chantHelp:'Play the video and tap the big button the moment each mantra begins. Then each mantra can be played on its own.', missing:'Could not open this text. Check that this file exists: '}
 };
 function t(k, u){ var s = (STR[S.lang] || STR.te)[k] || STR.te[k] || k; return u === undefined ? s : s.replace('{u}', u); }
 function en(){ return S.lang === 'en'; }
@@ -321,11 +335,12 @@ function unitLabel(p){ return (p && tx(p,'unitLabel')) || tx(T,'unitLabel') || t
 function unitWord(p){ return (!p || single(p)) ? t('part') : unitLabel(p); }
 function unitTitle(p,u){ return single(p) ? tx(p,'name') : tx(p,'name')+', '+unitLabel(p)+' '+u.n; }
 function artFor(p,u){ return ART[p.id+'-'+u.n] || null; }
-function footer(){ return OWNER ? '<p class="foot">© '+OWNER.year+' '+esc(en() ? OWNER.en : OWNER.te)+' – '+t('copy')+'</p>' : ''; }
+var VERSION = 'v10';
+function footer(){ return OWNER ? '<p class="foot">© '+OWNER.year+' '+esc(en() ? OWNER.en : OWNER.te)+' – '+t('copy')+' · '+VERSION+'</p>' : ''; }
 
 function show(which){
   screen = which;
-  ['library','contents','reader'].forEach(function(id){ $(id).classList.toggle('hidden', id !== which); });
+  ['library','contents','reader','full'].forEach(function(id){ $(id).classList.toggle('hidden', id !== which); });
   $(which).classList.remove('fade'); void $(which).offsetWidth; $(which).classList.add('fade');
   $('btnBack').classList.toggle('ghost', which === 'library');
   if(which !== 'reader') $('progBar').style.width = '0';
@@ -334,6 +349,7 @@ function show(which){
 function rerender(){
   if(screen === 'library') renderLibrary();
   else if(screen === 'contents') renderContents();
+  else if(screen === 'full') renderFull(fullPid);
   else { staticLabels(); renderStep(); }
 }
 function loadScript(src, done){ var s = document.createElement('script'); s.src = src; s.onload = function(){ done(true); }; s.onerror = function(){ done(false); }; document.head.appendChild(s); }
@@ -403,6 +419,7 @@ function renderContents(){
   T.parts.forEach(function(p){
     var n = p.units.reduce(function(a,u){ return a+u.items.length; },0);
     h += '<div class="part-h"><h3>'+esc(tx(p,'name'))+'</h3><span>'+(single(p)?'':t('unitsOf').replace('{n}',p.units.length).replace('{u}',unitLabel(p))+', ')+n+' '+t('mantras')+'</span></div>';
+    if(!single(p)) h += '<button class="readbtn" data-read="'+esc(p.id)+'">'+t('readFull').replace('{p}', tx(p,'name'))+'</button>';
     if(myChant(p.id, 'full')) h += '<button class="chantbtn" data-my="'+esc(p.id)+'">'+t('myFull')+'</button>';
     else if(chantFor(p.id)) h += '<button class="chantbtn" data-chant="'+esc(p.id)+'">'+t('chantFull')+'</button>';
     p.units.forEach(function(u){
@@ -415,6 +432,7 @@ function renderContents(){
     });
   });
   var nMy = myCount();
+  if(!nMy) h = h.replace('</div>', '</div><div class="mychant"><button id="myAddTop">'+t('myAdd')+'</button></div>');
   h += '<div class="mychant"><button id="myAdd">'+t('myAdd')+'</button>'+(nMy ? '<button id="myDel">'+t('myDel')+'</button>' : '')+'</div>' +
        (nMy ? '<p class="foot" style="margin-top:6px">'+t('myHave').replace('{n}', nMy)+'</p>' : '');
   $('contents').innerHTML = h + footer();
@@ -423,6 +441,8 @@ function renderContents(){
   var r = $('resumeText'); if(r) r.onclick = function(){ openUnit(pos.part, pos.unit, pos.idx); };
   Array.prototype.forEach.call($('contents').querySelectorAll('[data-my]'), function(b){ b.onclick = function(){ var pid = b.getAttribute('data-my'); openMy(pid, 'full', tx(findPart(pid),'name')); }; });
   $('myAdd').onclick = function(){ $('chantFile').click(); };
+  Array.prototype.forEach.call($('contents').querySelectorAll('[data-read]'), function(b){ b.onclick = function(){ renderFull(b.getAttribute('data-read')); }; });
+  if($('myAddTop')) $('myAddTop').onclick = function(){ $('chantFile').click(); };
   if($('myDel')) $('myDel').onclick = function(){ if(!confirm(t('myDelQ'))) return; Object.keys(RECS).forEach(function(k){ if(k.indexOf('chant/'+T.id+'/') === 0) delRec(k); }); closeMy(); renderContents(); };
   Array.prototype.forEach.call($('contents').querySelectorAll('[data-chant]'), function(b){ b.onclick = function(){ unlockAudio(); openChant(b.getAttribute('data-chant'), 0, false); }; });
 }
@@ -468,6 +488,7 @@ function renderStep(){
   var mc = myChant(p.id, u.n);
   $('btnChantUnit').classList.toggle('hidden', !mc);
   $('btnChantUnit').textContent = t('myUnit', unitWord(p));
+  $('btnAddChant').textContent = t('myAdd') + (myCount() ? ' ('+myCount()+')' : '');
   setPlayUI(); recUI();
   save('pos.'+T.id, {part:p.id, unit:u.n, idx:cur.idx});
   LAST = {text:T.id, part:p.id, unit:u.n, idx:cur.idx}; save('last', LAST);
@@ -851,6 +872,31 @@ $('ytClose').onclick = function(){
   ytMarking = false; $('yt').classList.add('hidden'); document.body.classList.remove('ytopen');
 };
 
+/* ---------- full text: only the mantras, with svaras ---------- */
+var fullPid = null;
+function renderFull(pid){
+  fullPid = pid; var p = findPart(pid);
+  $('title').textContent = tx(p,'name');
+  var h = '<div class="fullh"><h2>'+esc(tx(p,'name'))+'</h2></div>';
+  if(S.svara) h += '<div class="legend"><span><b>క॒</b> '+t('anu')+'</span><span><b>క॑</b> '+t('svar')+'</span><span><b>క᳚</b> '+t('dsvar')+'</span></div>';
+  if(myChant(pid, 'full')) h += '<div class="fullbar"><button id="fullPlay">'+t('myFull')+'</button></div>';
+  h += '<p class="foot" style="margin:4px 0 0">'+t('fullTap')+'</p>';
+  p.units.forEach(function(u){
+    h += '<div class="fullu">'+esc(unitLabel(p))+' '+u.n+'</div>';
+    u.items.forEach(function(it, i){
+      var txt = S.svara && it.svara ? it.svara : it.text;
+      h += '<p class="fullv" data-u="'+u.n+'" data-i="'+i+'">'+esc(txt)+'<i>'+it.n+'</i></p>';
+    });
+  });
+  h += '<div class="fullbar"><button id="fullTop">'+t('top')+'</button></div>' + footer();
+  $('full').innerHTML = h; show('full');
+  if($('fullPlay')) $('fullPlay').onclick = function(){ openMy(pid, 'full', tx(p,'name')); };
+  $('fullTop').onclick = function(){ window.scrollTo({top:0, behavior:'smooth'}); };
+  Array.prototype.forEach.call($('full').querySelectorAll('.fullv'), function(el){ el.onclick = function(){
+    openUnit(pid, +el.getAttribute('data-u'), +el.getAttribute('data-i'));
+  }; });
+}
+
 /* ---------- my own chanting audio (kept only on this phone) ---------- */
 function myKey(pid, part){ return 'chant/'+T.id+'/'+pid+'-'+part; }
 function myChant(pid, part){ return T ? recURL(myKey(pid, part)) : null; }
@@ -904,7 +950,7 @@ var cpDragging = false;
 function cpSpeeds(){
   var rate = S.chantRate || 1;
   $('cpSpeeds').innerHTML = '<span style="align-self:center;font-size:.9rem;opacity:.8">'+t('chantSpeed')+'</span>' +
-    [0.5,0.75,0.9,1,1.1,1.25,1.5].map(function(r){ return '<button data-r="'+r+'"'+(r === rate ? ' class="on"' : '')+'>'+r+'×</button>'; }).join('');
+    [0.5,0.75,1,1.25,1.5,1.75,2].map(function(r){ return '<button data-r="'+r+'"'+(r === rate ? ' class="on"' : '')+'>'+r+'×</button>'; }).join('');
   Array.prototype.forEach.call($('cpSpeeds').querySelectorAll('button'), function(b){ b.onclick = function(){
     S.chantRate = +b.getAttribute('data-r'); save('settings', S); CH.playbackRate = S.chantRate; cpSpeeds();
   }; });
@@ -962,7 +1008,7 @@ function openSettings(){
     '<div class="set"><span>'+t('night')+'</span>'+seg('dark', [[false,t('off')],[true,t('on')]], S.dark)+'</div>'+
     '<div class="set"><span>'+t('svaraSet')+'</span>'+seg('svara', [[true,t('on')],[false,t('off')]], S.svara)+'<small>'+t('svaraHelp')+'</small></div>'+
     '<div class="set"><span>'+t('mode')+'</span>'+seg('mode', [['both',t('both')],['mOnly',t('mOnly')],['aOnly',t('aOnly')]], S.mode)+'</div>'+
-    '<div class="set"><span>'+t('speed')+'</span>'+seg('rate', [[0.7,'0.7×'],[0.85,'0.85×'],[1,'1×'],[1.15,'1.15×']], S.rate)+'</div>'+
+    '<div class="set"><span>'+t('speed')+'</span>'+seg('rate', [[0.75,'0.75×'],[1,'1×'],[1.25,'1.25×'],[1.5,'1.5×'],[2,'2×']], S.rate)+'</div>'+
     '<div class="set"><label>'+t('mVoice')+'</label>'+voiceSelect('mantraVoice', indic, S.mantraVoice)+
       '<small>'+(mv ? '→ '+esc(mv.name) : t('noVoice'))+'<br>'+t('voiceHelp')+'</small></div>'+
     '<div class="set"><label>'+t('aVoice')+'</label>'+voiceSelect('meaningVoice', tel, S.meaningVoice)+
@@ -983,7 +1029,7 @@ function openSettings(){
 }
 
 /* ---------- wiring ---------- */
-$('btnBack').onclick = function(){ if(screen === 'reader') renderContents(); else renderLibrary(); };
+$('btnBack').onclick = function(){ if(screen === 'reader' || screen === 'full') renderContents(); else renderLibrary(); };
 $('btnSettings').onclick = openSettings;
 $('btnPrev').onclick = function(){ go(-1); };
 $('btnNext').onclick = function(){ go(1); };
@@ -991,6 +1037,7 @@ $('slider').oninput = function(){ goTo(+this.value-1); };
 $('btnAll').onclick = playAll;
 $('btnMantra').onclick = function(){ playOne('mantra'); };
 $('btnMeaning').onclick = function(){ playOne('meaning'); };
+$('btnAddChant').onclick = function(){ $('chantFile').click(); };
 $('btnChantUnit').onclick = function(){ stopSpeech(); openMy(cur.part.id, cur.unit.n, unitTitle(cur.part, cur.unit)); };
 $('btnRec').onclick = function(){ toggleRecord('mantra'); };
 $('btnRecA').onclick = function(){ toggleRecord('meaning'); };
