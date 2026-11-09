@@ -1,5 +1,5 @@
 // Offline support: core files are cached on install; each text's file is cached the first time it is opened.
-var CACHE = 'mananam-v17';
+var CACHE = 'mananam-v18';
 var CORE = ['./', './index.html', './library.js', './manifest.webmanifest',
             './icon-180.png', './icon-192.png', './icon-512.png', './texts/rudram/text.js', './texts/rudram/art.js', './fonts/TiroTelugu-mantra.woff2'];
 self.addEventListener('install', function(e){
@@ -15,7 +15,7 @@ self.addEventListener('fetch', function(e){
   if(e.request.method !== 'GET' || new URL(e.request.url).origin !== self.location.origin) return;   // YouTube etc. go straight to the network
   if(e.request.headers.has('range')) return;   // audio seeking
   e.respondWith(
-    fetch(e.request).then(function(r){
+    fetch(e.request.mode === 'navigate' ? e.request : new Request(e.request.url, {cache: 'no-cache', credentials: 'same-origin'})).then(function(r){   // always check GitHub for a newer copy
       if(r.status !== 200) return r;
       var copy = r.clone(); caches.open(CACHE).then(function(c){ c.put(e.request, copy); }); return r;
     }).catch(function(){ return caches.match(e.request); })

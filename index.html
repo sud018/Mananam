@@ -353,7 +353,7 @@ function unitLabel(p){ return (p && tx(p,'unitLabel')) || tx(T,'unitLabel') || t
 function unitWord(p){ return (!p || single(p)) ? t('part') : unitLabel(p); }
 function unitTitle(p,u){ return single(p) ? tx(p,'name') : tx(p,'name')+', '+unitLabel(p)+' '+u.n; }
 function artFor(p,u){ return ART[p.id+'-'+u.n] || null; }
-var VERSION = 'v17';
+var VERSION = 'v18';
 function footer(){ return OWNER ? '<p class="foot">© '+OWNER.year+' '+esc(en() ? OWNER.en : OWNER.te)+' – '+t('copy')+' · '+VERSION+'</p>' : ''; }
 
 function show(which){
@@ -1147,7 +1147,11 @@ document.addEventListener('keydown', function(e){
 window.__mananam = {toDeva: toDeva};
 applySettings(); refreshVoices(); renderLibrary(); loadRecs();
 if('serviceWorker' in navigator && location.protocol !== 'file:')
-  window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+  window.addEventListener('load', function(){
+    var had = !!navigator.serviceWorker.controller, reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function(){ if(had && !reloaded){ reloaded = true; location.reload(); } });   // a new version arrived: show it at once
+    navigator.serviceWorker.register('sw.js', {updateViaCache: 'none'}).then(function(reg){ reg.update(); }).catch(function(){});
+  });
 })();
 </script>
 </body>
