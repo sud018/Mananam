@@ -342,7 +342,7 @@ function unitLabel(p){ return (p && tx(p,'unitLabel')) || tx(T,'unitLabel') || t
 function unitWord(p){ return (!p || single(p)) ? t('part') : unitLabel(p); }
 function unitTitle(p,u){ return single(p) ? tx(p,'name') : tx(p,'name')+', '+unitLabel(p)+' '+u.n; }
 function artFor(p,u){ return ART[p.id+'-'+u.n] || null; }
-var VERSION = 'v14';
+var VERSION = 'v15';
 function footer(){ return OWNER ? '<p class="foot">© '+OWNER.year+' '+esc(en() ? OWNER.en : OWNER.te)+' – '+t('copy')+' · '+VERSION+'</p>' : ''; }
 
 function show(which){

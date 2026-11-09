@@ -57,3 +57,6 @@ KYVeda Taittirīya Saṃhitā 4.5 / 4.7 and found 1–2 svara disagreements in t
 
 ## Pictures
 The illustrations are original line drawings made for this app from symbols in each anuvakam (bow and quiver, linga, rivers, rain, cows, yajna fire, numbers). They are not copied from anywhere.
+
+## Meanings rewritten in simple Telugu (Nov 2026)
+At Sudheer's request, every mantra meaning, anuvakam summary and "spirit" line was rewritten in plain, everyday Telugu. They now follow the traditional explanation (Sayana's commentary and common Telugu renderings) and no longer the wording of the original PDF. The mantra text and svaras are unchanged. The earlier "derived meaning" notes for Namakam 7, mantras 9–16, are gone: those mantras now have their own meanings.
