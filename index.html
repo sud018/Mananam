@@ -664,7 +664,7 @@ function sayQueue(list, my, done){   // list of {kind, src} or {kind, text}
 function currentParts(mode){
   var it = steps(cur.unit)[cur.idx], list = [];
   var add = function(kind, text){
-    var rec = kind === 'mantra' ? recURL(key()) : recURL(key()+'-a');
+    var rec = kind === 'mantra' ? (recURL(key()) || myChant(cur.part.id, cur.unit.n+'-'+(cur.idx+1))) : recURL(key()+'-a');
     var clip = kind === 'mantra' && !rec && clipFor(cur.part.id, cur.unit.n, cur.idx+1);
     if(clip){ list.push({kind:kind, yt:clip}); return; }
     var src = rec || (kind === 'mantra' ? fileFor('mantra') : fileFor('meaning'));
@@ -859,11 +859,11 @@ $('chantFile').onchange = function(){
   var files = Array.prototype.slice.call(this.files || []), n = 0;
   var ids = T.parts.map(function(p){ return p.id; });
   files.forEach(function(f){
-    var m = /^([a-z]+)[-_ ]?(full|\d{1,2})\.(mp3|m4a|wav|aac)$/i.exec(f.name.trim());
+    var m = /^([a-z]+)[-_ ]?(full|\d{1,2}(?:-\d{1,2})?)\.(mp3|m4a|wav|aac)$/i.exec(f.name.trim());
     if(!m) return;
     var pid = m[1].toLowerCase(); if(pid === 'chamaka') pid = 'chamakam';
     if(ids.indexOf(pid) < 0) return;
-    saveRec(myKey(pid, m[2].toLowerCase().replace(/^0/, '')), new Blob([f], {type: f.type || 'audio/mpeg'})); n++;
+    saveRec(myKey(pid, m[2].toLowerCase().replace(/^0(\d)/, '$1').replace(/-0(\d)/, '-$1')), new Blob([f], {type: f.type || 'audio/mpeg'})); n++;
   });
   try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   this.value = '';
