@@ -27,8 +27,9 @@ window.MANANAM_LIBRARY = [
     id: "shiva-ashtottaram",
     title: "శ్రీ శివ అష్టోత్తర శతనామావళి",
     titleEn: "Sri Shiva Ashtottara Shatanamavali",
-    subtitle: "",
-    icon: "॥",
-    ready: false
+    subtitle: "శివుని 108 నామాలు – ఒకే పేజీలో, తెలుగు అర్థంతో",
+    subtitleEn: "108 names of Shiva – on one page, with Telugu meaning",
+    icon: "శివ",
+    ready: true
   }
 ];

@@ -102,6 +102,11 @@ body.noaudio .mychant,body.noaudio #btnAll,body.noaudio #btnChantUnit,body.noaud
 .meaning b.nm{font-family:var(--mantra);color:var(--kumkum);font-weight:600}
 .meaning{white-space:pre-line;font-size:calc(1.14rem*var(--scale));line-height:1.95;color:var(--bilva);border-radius:12px;padding:2px 4px;transition:background .2s}
 .speaking{background:rgba(217,154,30,.16)}
+.lrow{display:flex;gap:12px;align-items:flex-start;padding:10px 2px;border-bottom:1px solid var(--rule)}
+.lrow .ln{flex:none;width:30px;height:30px;border-radius:50%;background:var(--ash-2);border:1px solid var(--rule);font:600 .8rem/30px var(--sans);text-align:center;color:var(--kumkum);margin-top:4px}
+.lrow .lv{font:500 calc(1.22rem*var(--scale))/1.6 var(--mantra);color:var(--indigo)}
+body.dark .lrow .lv{color:#e6e2d6}
+.lrow .lm{font-size:calc(1rem*var(--scale));line-height:1.6;color:var(--bilva);margin-top:2px}
 .readbtn{display:block;width:100%;margin:8px 0 2px;padding:12px;border-radius:12px;border:1.5px solid var(--indigo);color:var(--indigo);font:600 1rem var(--sans);background:var(--ash-2)}
 body.dark .readbtn{border-color:#9aa0d8;color:#c9cdf0}
 .fullh{text-align:center;margin:6px 0 2px}
@@ -337,7 +342,7 @@ function unitLabel(p){ return (p && tx(p,'unitLabel')) || tx(T,'unitLabel') || t
 function unitWord(p){ return (!p || single(p)) ? t('part') : unitLabel(p); }
 function unitTitle(p,u){ return single(p) ? tx(p,'name') : tx(p,'name')+', '+unitLabel(p)+' '+u.n; }
 function artFor(p,u){ return ART[p.id+'-'+u.n] || null; }
-var VERSION = 'v12';
+var VERSION = 'v13';
 function footer(){ return OWNER ? '<p class="foot">© '+OWNER.year+' '+esc(en() ? OWNER.en : OWNER.te)+' – '+t('copy')+' · '+VERSION+'</p>' : ''; }
 
 function show(which){
@@ -410,7 +415,7 @@ function openText(id, then){
     if(!tt){ $('contents').innerHTML = '<div class="err">'+t('missing')+'texts/'+esc(id)+'/text.js</div>'; show('contents'); return; }
     T = tt; ART = window.MANANAM_ART[id] || {};
     document.body.classList.toggle('noaudio', !!tt.noAudio);
-    if(then) then(); else renderContents();
+    if(then) then(); else if(tt.listMode) renderFull(tt.parts[0].id); else renderContents();
   });
 }
 function renderContents(){
@@ -882,15 +887,21 @@ var fullPid = null;
 function renderFull(pid){
   fullPid = pid; var p = findPart(pid);
   $('title').textContent = tx(p,'name');
-  var h = '<div class="fullh"><h2>'+esc(tx(p,'name'))+'</h2></div>';
-  if(S.svara) h += '<div class="legend"><span><b>క॒</b> '+t('anu')+'</span><span><b>క॑</b> '+t('svar')+'</span><span><b>క᳚</b> '+t('dsvar')+'</span></div>';
+  var h = '<div class="fullh"><h2>'+esc(T.listMode ? tx(T,'title') : tx(p,'name'))+'</h2></div>';
+  if(T.listMode){
+    var a0 = artFor(p, p.units[0]);
+    if(a0) h += '<div class="art">'+a0.svg+'</div><p class="art-cap">'+esc(a0.cap)+'</p>';
+    if(p.units[0].essence) h += '<div class="essence">'+esc(p.units[0].essence)+'</div>';
+  }
+  if(S.svara && p.units.some(function(u){ return u.items.some(function(it){ return it.svara; }); })) h += '<div class="legend"><span><b>క॒</b> '+t('anu')+'</span><span><b>క॑</b> '+t('svar')+'</span><span><b>క᳚</b> '+t('dsvar')+'</span></div>';
   if(myChant(pid, 'full')) h += '<div class="fullbar"><button id="fullPlay">'+t('myFull')+'</button></div>';
-  h += '<p class="foot" style="margin:4px 0 0">'+t('fullTap')+'</p>';
+  if(!T.listMode) h += '<p class="foot" style="margin:4px 0 0">'+t('fullTap')+'</p>';
   p.units.forEach(function(u){
-    h += '<div class="fullu">'+esc(unitLabel(p))+' '+u.n+'</div>';
+    if(!T.listMode) h += '<div class="fullu">'+esc(unitLabel(p))+' '+u.n+'</div>';
     u.items.forEach(function(it, i){
       var txt = S.svara && it.svara ? it.svara : it.text;
-      h += '<p class="fullv" data-u="'+u.n+'" data-i="'+i+'">'+esc(txt)+'<i>'+it.n+'</i></p>';
+      if(T.listMode) h += '<div class="lrow"><span class="ln">'+it.n+'</span><div><div class="lv">'+esc(txt)+'</div><div class="lm">'+esc(it.meaning)+'</div></div></div>';
+      else h += '<p class="fullv" data-u="'+u.n+'" data-i="'+i+'">'+esc(txt)+'<i>'+it.n+'</i></p>';
     });
   });
   h += '<div class="fullbar"><button id="fullTop">'+t('top')+'</button></div>' + footer();
@@ -1034,7 +1045,7 @@ function openSettings(){
 }
 
 /* ---------- wiring ---------- */
-$('btnBack').onclick = function(){ if(screen === 'reader' || screen === 'full') renderContents(); else renderLibrary(); };
+$('btnBack').onclick = function(){ if(screen === 'reader' || (screen === 'full' && !T.listMode)) renderContents(); else renderLibrary(); };
 $('btnSettings').onclick = openSettings;
 $('btnPrev').onclick = function(){ go(-1); };
 $('btnNext').onclick = function(){ go(1); };
