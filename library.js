@@ -31,5 +31,14 @@ window.MANANAM_LIBRARY = [
     subtitleEn: "108 names of Shiva – on one page, with Telugu meaning",
     icon: "శివ",
     ready: true
+  },
+  {
+    id: "kanakadhara-stotram",
+    title: "శ్రీ కనకధారా స్తోత్రం",
+    titleEn: "Sri Kanakadhara Stotram",
+    subtitle: "ఆది శంకరాచార్య విరచితం – 21 శ్లోకాలు, తెలుగు అర్థంతో",
+    subtitleEn: "By Adi Shankaracharya – 21 verses with Telugu meaning",
+    icon: "శ్రీ",
+    ready: true
   }
 ];

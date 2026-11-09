@@ -353,7 +353,7 @@ function unitLabel(p){ return (p && tx(p,'unitLabel')) || tx(T,'unitLabel') || t
 function unitWord(p){ return (!p || single(p)) ? t('part') : unitLabel(p); }
 function unitTitle(p,u){ return single(p) ? tx(p,'name') : tx(p,'name')+', '+unitLabel(p)+' '+u.n; }
 function artFor(p,u){ return ART[p.id+'-'+u.n] || null; }
-var VERSION = 'v16';
+var VERSION = 'v17';
 function footer(){ return OWNER ? '<p class="foot">© '+OWNER.year+' '+esc(en() ? OWNER.en : OWNER.te)+' – '+t('copy')+' · '+VERSION+'</p>' : ''; }
 
 function show(which){
@@ -445,7 +445,7 @@ function renderContents(){
     p.units.forEach(function(u){
       var a = artFor(p,u), st = steps(u), rd = READ[ukey(p,u)] || {};
       var dots = st.map(function(_,i){ return '<i'+(rd[i+1]?' class="r"':'')+'></i>'; }).join('');
-      var title = single(p) ? tx(p,'name') : unitLabel(p)+' '+u.n+(T.nameLines && u.name ? ' · '+u.name : '');
+      var title = single(p) ? tx(p,'name') : unitLabel(p)+' '+u.n+((T.nameLines || T.readAll) && u.name ? ' · '+u.name : '');
       h += '<button class="unit-row" data-p="'+esc(p.id)+'" data-u="'+u.n+'"'+(u.items.length?'':' disabled')+'>'+
            (a ? '<span class="thumb" aria-hidden="true">'+a.svg+'</span>' : '')+
            '<span class="t"><b>'+esc(title)+'</b><small>'+esc(a ? a.cap : (u.name || ''))+'</small><span class="dots">'+dots+'</span></span></button>';
@@ -480,7 +480,7 @@ function openUnit(pid, n, idx){
 function renderStep(){
   var p = cur.part, u = cur.unit, st = steps(u), item = st[cur.idx], a = artFor(p,u), w = unitWord(p);
   $('title').textContent = unitTitle(p,u);
-  $('where').textContent = item.kind === 'v' ? (tx(T,'itemLabel') || t('mantra'))+' '+item.v.n+(item.v.n <= u.items.length ? ' / '+u.items.length : '') : t('summary');
+  $('where').textContent = item.kind === 'v' ? (item.v.n ? (tx(T,'itemLabel') || t('mantra'))+' '+item.v.n+(item.v.n <= u.items.length ? ' / '+u.items.length : '') : (u.name || '')) : t('summary');
   $('count').textContent = (cur.idx+1)+' / '+st.length;
   $('slider').value = cur.idx+1;
   $('progBar').style.width = ((cur.idx+1)/st.length*100)+'%';
@@ -492,15 +492,17 @@ function renderStep(){
   $('topArea').innerHTML = top;
   if(item.kind === 'v'){
     $('verseArea').innerHTML = (cur.idx === 0 && u.opening ? '<div class="opening">'+esc(u.opening)+'</div>' : '')+
-      '<div class="vnum">'+item.v.n+'</div><div class="verse" id="verseText">'+esc(S.svara && item.v.svara ? item.v.svara : item.v.text)+'</div>'+
+      (item.v.n ? '<div class="vnum">'+item.v.n+'</div>' : '')+'<div class="verse" id="verseText">'+esc(S.svara && item.v.svara ? item.v.svara : item.v.text)+'</div>'+
       (S.svara && item.v.svara && cur.idx === 0 ? '<div class="legend"><span><b>క॒</b> '+t('anu')+'</span><span><b>క॑</b> '+t('svar')+'</span><span><b>క᳚</b> '+t('dsvar')+'</span></div>' : '');
   }else{
     $('verseArea').innerHTML = '<div class="sumhead">'+t('summary')+'</div><div class="opening">'+t('wholeOf', w)+'</div>';
   }
   drawMeaning(item);
   $('btnMantra').disabled = item.kind !== 'v';
-  $('btnPrev').disabled = cur.idx === 0;
-  $('btnNext').disabled = cur.idx === st.length-1;
+
+  var up = unitPos();
+  $('btnPrev').disabled = cur.idx === 0 && up[1] <= 0;
+  $('btnNext').disabled = cur.idx === st.length-1 && up[1] === up[0].length-1;
   var marked = !!MARKS[key()];
   $('btnMark').textContent = marked ? t('marked') : t('mark');
   $('btnMark').setAttribute('aria-pressed', marked);
@@ -527,7 +529,17 @@ function drawMeaning(item){
     $('reveal').onclick = function(){ revealed = true; drawMeaning(item); };
   }
 }
-function go(d){ var n = cur.idx + d; if(n < 0 || n >= steps(cur.unit).length) return; stopSpeech(); cur.idx = n; renderStep(); window.scrollTo(0,0); }
+function allUnits(){ var a = []; T.parts.forEach(function(p){ p.units.forEach(function(u){ if(u.items.length) a.push([p, u]); }); }); return a; }
+function unitPos(){ var a = allUnits(); for(var i = 0; i < a.length; i++) if(a[i][0] === cur.part && a[i][1] === cur.unit) return [a, i]; return [a, -1]; }
+function go(d){
+  var n = cur.idx + d;
+  if(n < 0 || n >= steps(cur.unit).length){   // carry on into the previous / next section
+    var up = unitPos(), a = up[0], j = up[1] + d;
+    if(up[1] < 0 || j < 0 || j >= a.length) return;
+    stopSpeech(); openUnit(a[j][0].id, a[j][1].n, d > 0 ? 0 : steps(a[j][1]).length - 1); window.scrollTo(0,0); return;
+  }
+  stopSpeech(); cur.idx = n; renderStep(); window.scrollTo(0,0);
+}
 function goTo(i){ stopSpeech(); cur.idx = i; renderStep(); window.scrollTo(0,0); }
 
 /* ---------- voices ---------- */
@@ -935,7 +947,7 @@ function numEnd(txt, n){   // put the number at the end: "… ॥" -> "… ॥ n
 function verseHTML(txt, n, attrs){   // speaker line in bold, then the verse with its number
   var lines = txt.split('\n'), sp = '';
   if(/ఉవాచ\s*[–-]?\s*$/.test(lines[0]) || /^శ్లో॥|మంత్రః$/.test(lines[0].trim())){ sp = lines.shift().replace(/\s*[–-]\s*$/, ''); }
-  return (sp ? '<div class="fsp">'+esc(sp)+'</div>' : '')+'<p class="fullv n2"'+attrs+'>'+nw(esc(numEnd(lines.join('\n'), n)))+'</p>';
+  return (sp ? '<div class="fsp">'+esc(sp)+'</div>' : '')+'<p class="fullv n2"'+attrs+'>'+(n ? nw(esc(numEnd(lines.join('\n'), n))) : esc(lines.join('\n')))+'</p>';
 }
 function nw(html){ return html.replace(/(\S*\u00a0॥\u00a0\d+\u00a0॥)/, '<span class="nw">$1</span>'); }
 function anuvakaHTML(p, u){   // one block per anuvakam, a line per mantra, ॥ n ॥ only at the end
@@ -952,7 +964,7 @@ function renderFullAll(){
   $('title').textContent = tx(T,'title');
   var h = '<div class="fullh"><h2>'+esc(tx(T,'title'))+'</h2></div><p class="foot" style="margin:4px 0 0">'+t('fullTap')+'</p>';
   T.parts.forEach(function(p){
-    h += '<div class="fsec">'+esc(tx(p,'name'))+'</div>';
+    if(T.parts.length > 1) h += '<div class="fsec">'+esc(tx(p,'name'))+'</div>';
     p.units.forEach(function(u){
       if(u.head) h += '<div class="fsec sub">'+esc(u.head)+'</div>';
       u.items.forEach(function(it, i){
