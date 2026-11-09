@@ -91,16 +91,25 @@ def sarvam_to_file(client, text, path, speaker, pace):
         w = wave.open(io.BytesIO(base64.b64decode(b64)))
         params = params or w.getparams()
         frames.append(w.readframes(w.getnframes()))
-    out = wave.open(path, "wb"); out.setparams(params)
-    for f in frames: out.writeframes(f)
-    out.close()
+    pcm = b"".join(frames)
+    try:
+        import lameenc                      # small MP3s (about 0.5 MB per minute)
+        enc = lameenc.Encoder()
+        enc.set_bit_rate(64); enc.set_in_sample_rate(params.framerate)
+        enc.set_channels(params.nchannels); enc.set_quality(2)
+        open(path, "wb").write(enc.encode(pcm) + enc.flush())
+        return "mp3"
+    except ImportError:
+        out = wave.open(path, "wb"); out.setparams(params); out.writeframes(pcm); out.close()
+        return "wav"
 
 
 async def make_one(job, outdir, voices, sem, stats, engine="edge", client=None, speaker=None, redo=False):
     key, text, kind = job
-    ext = "wav" if (engine == "sarvam" and kind == "meaning") else "mp3"
-    path = os.path.join(outdir, key + "." + ext)
-    if not redo and os.path.exists(path) and os.path.getsize(path) > 1000:
+    use_sarvam = engine == "sarvam" and kind == "meaning"
+    ext = "mp3"
+    path = os.path.join(outdir, key + ".mp3")
+    if not redo and any(os.path.exists(os.path.join(outdir, key + e)) and os.path.getsize(os.path.join(outdir, key + e)) > 1000 for e in (".mp3", ".wav")):
         stats["skip"] += 1
         return
     voice = voices[kind]
@@ -109,8 +118,9 @@ async def make_one(job, outdir, voices, sem, stats, engine="edge", client=None, 
         for attempt in range(4):
             try:
                 tmp = path + ".part"
-                if ext == "wav":
-                    await asyncio.to_thread(sarvam_to_file, client, text, tmp, speaker, 0.95)
+                if use_sarvam:
+                    got = await asyncio.to_thread(sarvam_to_file, client, text, tmp, speaker, 0.95)
+                    if got == "wav": path = path[:-3] + "wav"; ext = "wav"
                 else:
                     await edge_tts.Communicate(text, voice, rate=rate).save(tmp)
                 os.replace(tmp, path)
@@ -126,11 +136,27 @@ async def make_one(job, outdir, voices, sem, stats, engine="edge", client=None, 
         stats["fail"].append((key, str(last)))
 
 
+def write_names(text, text_id):
+    """audio/<text>/FILE-NAMES.csv: which file name belongs to which mantra (for your own recordings)."""
+    import csv
+    path = os.path.join(ROOT, "audio", text_id, "FILE-NAMES.csv")
+    with open(path, "w", encoding="utf-8-sig", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["file (mantra = -m, meaning = -a)", "part", "anuvakam", "step", "starts with"])
+        for part in text["parts"]:
+            for unit in part["units"]:
+                steps = [("v", it) for it in unit["items"]] + ([("s", unit["summary"])] if unit.get("summary") else [])
+                for i, (kind, it) in enumerate(steps, start=1):
+                    base = "%s-%s-%d" % (part["id"], unit["n"], i)
+                    first = (it["text"] if kind == "v" else "సారాంశం (summary)").split("\n")[0][:40]
+                    w.writerow([base + ("-m.mp3 / " + base + "-a.mp3" if kind == "v" else "-a.mp3"), part["id"], unit["n"], i, first])
+
+
 def write_index(text_id, outdir, voices):
     files = {}
     for f in sorted(os.listdir(outdir)):
-        if (f.endswith(".mp3") or f.endswith(".wav")) and os.path.getsize(os.path.join(outdir, f)) > 1000:
-            files[f[:-4]] = 1 if f.endswith(".mp3") else "wav"
+        if (f.endswith(".mp3") or f.endswith(".wav") or f.endswith(".m4a")) and os.path.getsize(os.path.join(outdir, f)) > 1000:
+            files[f[:-4]] = 1 if f.endswith(".mp3") else f[-3:]
     js = ("// Made by tools/make_audio.py – lists the natural-voice MP3 files the app can play.\n"
           "(window.MANANAM_AUDIO = window.MANANAM_AUDIO || {})['%s'] = %s;\n") % (
         text_id, json.dumps({"voices": voices, "files": files}, ensure_ascii=False, indent=0))
@@ -148,8 +174,16 @@ async def main():
     ap.add_argument("--key", help="Sarvam API key (or set SARVAM_API_KEY)")
     ap.add_argument("--speaker", default="kavitha", help="Sarvam voice name")
     ap.add_argument("--redo", action="store_true", help="make files again even if they exist")
+    ap.add_argument("--index-only", action="store_true", help="only refresh the list of audio files (after adding your own recordings)")
     a = ap.parse_args()
     global edge_tts
+    text = load_text(a.text)
+    outdir = os.path.join(ROOT, "audio", a.text)
+    os.makedirs(outdir, exist_ok=True)
+    write_names(text, a.text)
+    if a.index_only:
+        n = write_index(a.text, outdir, {"note": "index refreshed"})
+        print("The app now knows %d audio files in %s" % (n, outdir)); return
     client = None
     if a.engine == "sarvam":
         try:
@@ -167,9 +201,6 @@ async def main():
             sys.exit("Please run first:  pip install edge-tts")
 
     voices = {"mantra": VOICES["mantra"], "meaning": VOICES["meaning_m" if a.male else "meaning_f"]}
-    text = load_text(a.text)
-    outdir = os.path.join(ROOT, "audio", a.text)
-    os.makedirs(outdir, exist_ok=True)
     jobs = jobs_for(text, a.only)
     stats = {"made": 0, "skip": 0, "fail": [], "total": len(jobs)}
     print("Making %d audio files in %s" % (len(jobs), outdir))

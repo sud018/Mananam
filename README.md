@@ -45,9 +45,16 @@ Phone voices for Telugu and Sanskrit sound robotic. To get natural Microsoft neu
 3. Upload: `git add audio` → `git commit -m "Add audio"` → `git push`.
 The app plays these files automatically; where a file is missing it uses the phone's voice.
 
-## Most natural Telugu meanings
-`python tools\make_audio.py --only a --engine sarvam --key YOUR_KEY --speaker kavitha --redo`
-uses Sarvam Bulbul v3 (Indian-made, trained on Indian speech). Get a key at dashboard.sarvam.ai. Try a few speakers on sarvam.ai first.
+## Most natural Telugu meanings (Sarvam Bulbul)
+1. Sign up at dashboard.sarvam.ai and copy your API key. All 274 meanings + summaries are ~54,000 characters (≈ ₹165 at ₹30 per 10,000 characters).
+2. Double-click `tools\make_meanings_sarvam.bat`, paste the key, choose the voice you liked in the playground. It makes `audio\rudram\*-a.mp3`.
+3. `git add audio` → `git commit -m "Add meaning audio"` → `git push`.
+
+## Adding your own Sanskrit recordings as files (plays on every device)
+1. Record each mantra on your phone or computer (MP3 or M4A).
+2. Name each file as listed in `audio\rudram\FILE-NAMES.csv`, e.g. `namakam-1-1-m.mp3` = Namakam anuvakam 1, mantra 1. (`-m` = mantra, `-a` = meaning.)
+3. Put them in `audio\rudram\`, then run `python tools\make_audio.py --index-only` so the app knows about them.
+(Or use 🎙 Record mantra inside the app – quicker, but those recordings stay on that one phone.)
 
 ## Your own chanting
 In any mantra, tap **🎙 Record mantra** (or **🎙 Record meaning**), speak, tap Stop. From then on it plays in your voice, also in whole-anuvakam play. Recordings stay on that phone only.
