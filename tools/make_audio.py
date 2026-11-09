@@ -85,8 +85,16 @@ def sarvam_to_file(client, text, path, speaker, pace):
     import base64, io, wave
     frames, params = [], None
     for piece in split_text(text):
-        r = client.text_to_speech.convert(text=piece, target_language_code="te-IN", model="bulbul:v3",
-                                          speaker=speaker, pace=pace)
+        import inspect
+        params_ok = inspect.signature(client.text_to_speech.convert).parameters
+        args = dict(text=piece, model="bulbul:v3", speaker=speaker, pace=pace)
+        if "language_code" in params_ok:      # newer sarvamai library
+            args["language_code"] = "te-IN"
+        else:                                  # older sarvamai library
+            args["target_language_code"] = "te-IN"
+        if "output_audio_codec" in params_ok:
+            args["output_audio_codec"] = "wav"
+        r = client.text_to_speech.convert(**args)
         b64 = (getattr(r, "audios", None) or r["audios"])[0]
         w = wave.open(io.BytesIO(base64.b64decode(b64)))
         params = params or w.getparams()
@@ -115,7 +123,7 @@ async def make_one(job, outdir, voices, sem, stats, engine="edge", client=None, 
     voice = voices[kind]
     rate = "-12%" if kind == "mantra" else "-4%"
     async with sem:
-        for attempt in range(4):
+        for attempt in range(6):
             try:
                 tmp = path + ".part"
                 if use_sarvam:
@@ -131,7 +139,17 @@ async def make_one(job, outdir, voices, sem, stats, engine="edge", client=None, 
                 print("  %4d / %d  %s" % (done, stats["total"], key), flush=True)
                 return
             except Exception as e:  # network hiccups: wait and retry
-                await asyncio.sleep(2 + attempt * 3)
+                msg = str(e)
+                code = getattr(e, "status_code", None)
+                print("  ! %s try %d failed: %s %s" % (key, attempt + 1, code or "", msg[:200]), flush=True)
+                if code in (401, 402, 403) or "credit" in msg.lower() or "quota" in msg.lower():
+                    print("\nStopping: Sarvam refused the key or there are no credits left (see the line above).", flush=True)
+                    try:
+                        n = write_index(os.path.basename(outdir), outdir, voices)
+                        print("Saved so far: the app knows %d audio files. Run again after adding credits to make the rest." % n, flush=True)
+                    finally:
+                        os._exit(1)
+                await asyncio.sleep((20 + attempt * 20) if code == 429 else (2 + attempt * 3))
                 last = e
         stats["fail"].append((key, str(last)))
 
@@ -203,12 +221,14 @@ async def main():
     voices = {"mantra": VOICES["mantra"], "meaning": VOICES["meaning_m" if a.male else "meaning_f"]}
     jobs = jobs_for(text, a.only)
     stats = {"made": 0, "skip": 0, "fail": [], "total": len(jobs)}
+    if a.engine == "sarvam":
+        voices["meaning"] = "Sarvam bulbul:v3, Telugu (te-IN), speaker " + a.speaker
     print("Making %d audio files in %s" % (len(jobs), outdir))
-    print("Voices: mantras = %s, meanings = %s\n" % (voices["mantra"], voices["meaning"]))
+    if a.only != "a": print("Mantra voice:  %s" % voices["mantra"])
+    if a.only != "m": print("Meaning voice: %s" % voices["meaning"])
+    print("(the first file can take up to a minute)\n", flush=True)
     t0 = time.time()
     sem = asyncio.Semaphore(a.parallel)
-    if a.engine == "sarvam":
-        voices["meaning"] = "sarvam bulbul:v3 / " + a.speaker
     await asyncio.gather(*(make_one(j, outdir, voices, sem, stats, a.engine, client, a.speaker, a.redo) for j in jobs))
     n = write_index(a.text, outdir, voices)
     print("\nDone in %d min. New: %d, already there: %d, failed: %d. The app now knows %d files."

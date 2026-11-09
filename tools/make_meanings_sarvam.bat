@@ -11,7 +11,7 @@ python -m pip install --quiet --upgrade sarvamai lameenc
 set /p SARVAM_API_KEY=Paste your Sarvam API key and press Enter: 
 set /p SPK=Voice name (for example shubh, manan, shreya, ishita) [shubh]: 
 if "%SPK%"=="" set SPK=shubh
-python tools\make_audio.py --only a --engine sarvam --speaker %SPK% --redo
+python tools\make_audio.py --only a --engine sarvam --speaker %SPK% --parallel 2
 echo.
 echo Finished. Open the app and tap "Listen to meaning".  To upload:  git add audio  ^&^&  git commit -m "Add meaning audio"  ^&^&  git push
 pause
