@@ -65,6 +65,9 @@ body.dark .resume{background:#2a2e5c}
 .resume b{display:block;font:600 1.02rem var(--serif)}
 .resume small{opacity:.8}
 .resume .lamp{width:30px;height:30px;flex:none}
+.cat-row .cnt{font:600 .85rem var(--sans);background:var(--ash-2);border:1px solid var(--rule);border-radius:999px;padding:2px 10px;color:var(--kumkum)}
+.cat-row .chev{font-size:1.6rem;color:var(--muted);margin-left:2px}
+.cat-row{padding:20px 4px}
 .cats{display:flex;gap:8px;margin:4px 0 10px;padding:4px;background:var(--ash-2);border:1px solid var(--rule);border-radius:16px}
 .cats button{flex:1;padding:11px 6px;white-space:nowrap;border-radius:12px;font:600 .98rem var(--sans);color:var(--muted);display:flex;align-items:center;justify-content:center;gap:6px}
 .cats button.on{background:var(--indigo);color:#f3efe6;box-shadow:0 2px 8px rgba(30,35,71,.25)}
@@ -358,7 +361,7 @@ function unitLabel(p){ return (p && tx(p,'unitLabel')) || tx(T,'unitLabel') || t
 function unitWord(p){ return (!p || single(p)) ? t('part') : unitLabel(p); }
 function unitTitle(p,u){ return single(p) ? tx(p,'name') : tx(p,'name')+', '+unitLabel(p)+' '+u.n; }
 function artFor(p,u){ return ART[p.id+'-'+u.n] || null; }
-var VERSION = 'v19';
+var VERSION = 'v20';
 function footer(){ return OWNER ? '<p class="foot">© '+OWNER.year+' '+esc(en() ? OWNER.en : OWNER.te)+' – '+t('copy')+' · '+VERSION+'</p>' : ''; }
 
 function show(which){
@@ -407,31 +410,47 @@ function staticLabels(){
 var LAMP = '<svg class="lamp" viewBox="0 0 30 30" aria-hidden="true"><path d="M15 3c4 5 5 8 3 11-1 1.5-5 1.5-6 0-2-3-1-6 3-11z" fill="#f2b64a"/><path d="M4 18h22l-4 6H8z" fill="#d9d4ea"/></svg>';
 
 /* ---------- library ---------- */
+var CURCAT = null;   // null = home (list of sections); otherwise the open section
+function catOf(e){ return e.category || (CATS[0] && CATS[0].id); }
 function renderLibrary(){
   stopSpeech();
-  $('title').textContent = t('app'); document.title = t('app');
-  var h = '<div class="hero"><div class="om" aria-hidden="true">ॐ</div><h2>'+t('app')+'</h2><p>'+t('tagline')+'</p></div><div class="divider" aria-hidden="true"></div>';
-  var le = LAST && libEntry(LAST.text);
-  if(le && le.ready) h += '<button class="resume" id="resume">'+LAMP+'<span><b>'+t('cont')+'</b><small>'+esc(tx(le,'title'))+' – '+t('fromLeft')+'</small></span></button>';
-  var cat = load('cat', CATS.length ? CATS[0].id : null);
-  if(CATS.length && !CATS.some(function(c){ return c.id === cat; })) cat = CATS[0].id;
-  if(CATS.length > 1) h += '<div class="cats" role="tablist">'+CATS.map(function(c){
-      var n = LIB.filter(function(e){ return (e.category || CATS[0].id) === c.id && e.ready; }).length;
-      return '<button role="tab" data-cat="'+esc(c.id)+'" aria-selected="'+(c.id === cat)+'"'+(c.id === cat ? ' class="on"' : '')+'><span>'+esc(c.icon || '')+'</span>'+esc(tx(c,'title'))+(n ? ' <small>'+n+'</small>' : '')+'</button>';
-    }).join('')+'</div>';
-  var shown = LIB.filter(function(e){ return !CATS.length || (e.category || CATS[0].id) === cat; });
-  if(!shown.length) h += '<p class="foot" style="margin:24px 0">'+t('soon')+'</p>';
-  shown.forEach(function(e){
-    h += '<button class="text-row" data-id="'+esc(e.id)+'"'+(e.ready?'':' disabled')+'>'+
-         '<span class="sig" aria-hidden="true">'+esc(e.icon || 'ॐ')+'</span>'+
-         '<span style="flex:1"><b>'+esc(tx(e,'title'))+'</b><small>'+esc(tx(e,'subtitle') || '')+'</small></span>'+
-         (e.ready ? '' : '<span class="soon">'+t('soon')+'</span>')+'</button>';
-  });
+  var useCats = CATS.length > 1, cat = useCats && CURCAT ? CATS.filter(function(c){ return c.id === CURCAT; })[0] : null;
+  if(useCats && CURCAT && !cat) CURCAT = null;
+  var h = '';
+  if(!cat){
+    $('title').textContent = t('app'); document.title = t('app');
+    h += '<div class="hero"><div class="om" aria-hidden="true">ॐ</div><h2>'+t('app')+'</h2><p>'+t('tagline')+'</p></div><div class="divider" aria-hidden="true"></div>';
+    var le = LAST && libEntry(LAST.text);
+    if(le && le.ready) h += '<button class="resume" id="resume">'+LAMP+'<span><b>'+t('cont')+'</b><small>'+esc(tx(le,'title'))+' – '+t('fromLeft')+'</small></span></button>';
+  } else {
+    $('title').textContent = tx(cat,'title'); document.title = tx(cat,'title');
+    h += '<div class="hero"><div class="om" aria-hidden="true">'+esc(cat.icon || 'ॐ')+'</div><h2>'+esc(tx(cat,'title'))+'</h2>'+(tx(cat,'subtitle') ? '<p>'+esc(tx(cat,'subtitle'))+'</p>' : '')+'</div><div class="divider" aria-hidden="true"></div>';
+  }
+  if(useCats && !cat){   // home: one card per section
+    CATS.forEach(function(c){
+      var all = LIB.filter(function(e){ return catOf(e) === c.id; }), ready = all.filter(function(e){ return e.ready; });
+      var names = (ready.length ? ready : all).slice(0, 4).map(function(e){ return tx(e,'title'); }).join(' · ');
+      h += '<button class="text-row cat-row" data-cat="'+esc(c.id)+'">'+
+           '<span class="sig" aria-hidden="true">'+esc(c.icon || 'ॐ')+'</span>'+
+           '<span style="flex:1"><b>'+esc(tx(c,'title'))+'</b><small>'+esc(tx(c,'subtitle') || names)+'</small></span>'+
+           (ready.length ? '<span class="cnt">'+ready.length+'</span>' : '<span class="soon">'+t('soon')+'</span>')+'<span class="chev" aria-hidden="true">›</span></button>';
+    });
+  } else {
+    var shown = LIB.filter(function(e){ return !useCats || catOf(e) === cat.id; });
+    if(!shown.length) h += '<p class="foot" style="margin:24px 0">'+t('soon')+'</p>';
+    shown.forEach(function(e){
+      h += '<button class="text-row" data-id="'+esc(e.id)+'"'+(e.ready?'':' disabled')+'>'+
+           '<span class="sig" aria-hidden="true">'+esc(e.icon || 'ॐ')+'</span>'+
+           '<span style="flex:1"><b>'+esc(tx(e,'title'))+'</b><small>'+esc(tx(e,'subtitle') || '')+'</small></span>'+
+           (e.ready ? '' : '<span class="soon">'+t('soon')+'</span>')+'</button>';
+    });
+  }
   $('library').innerHTML = h + footer();
   show('library');
-  Array.prototype.forEach.call($('library').querySelectorAll('[data-cat]'), function(b){ b.onclick = function(){ save('cat', b.getAttribute('data-cat')); renderLibrary(); }; });
-  Array.prototype.forEach.call($('library').querySelectorAll('.text-row:not([disabled])'), function(b){ b.onclick = function(){ openText(b.getAttribute('data-id')); }; });
-  var r = $('resume'); if(r) r.onclick = function(){ openText(LAST.text, function(){ openUnit(LAST.part, LAST.unit, LAST.idx); }); };
+  $('btnBack').classList.toggle('ghost', !cat);
+  Array.prototype.forEach.call($('library').querySelectorAll('[data-cat]'), function(b){ b.onclick = function(){ CURCAT = b.getAttribute('data-cat'); renderLibrary(); }; });
+  Array.prototype.forEach.call($('library').querySelectorAll('.text-row[data-id]:not([disabled])'), function(b){ b.onclick = function(){ openText(b.getAttribute('data-id')); }; });
+  var r = $('resume'); if(r) r.onclick = function(){ var e = libEntry(LAST.text); if(e) CURCAT = catOf(e); openText(LAST.text, function(){ openUnit(LAST.part, LAST.unit, LAST.idx); }); };
 }
 
 /* ---------- contents ---------- */
@@ -1127,7 +1146,7 @@ function openSettings(){
 }
 
 /* ---------- wiring ---------- */
-$('btnBack').onclick = function(){ if(screen === 'reader' || (screen === 'full' && !T.listMode)) renderContents(); else renderLibrary(); };
+$('btnBack').onclick = function(){ if(screen === 'reader' || (screen === 'full' && !T.listMode)) renderContents(); else if(screen === 'library'){ if(CURCAT){ CURCAT = null; renderLibrary(); } } else renderLibrary(); };
 $('btnSettings').onclick = openSettings;
 $('btnPrev').onclick = function(){ go(-1); };
 $('btnNext').onclick = function(){ go(1); };

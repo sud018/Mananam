@@ -7,8 +7,8 @@ window.MANANAM_OWNER = { te: "సుధీర్", en: "Sudheer", year: 2026 };
 
 // Tabs at the top of the home screen. Add a new kind of content by adding a line here.
 window.MANANAM_CATEGORIES = [
-  { id: "mantra", title: "మంత్ర స్తోత్రాలు", titleEn: "Mantras & Stotras", icon: "ॐ" },
-  { id: "katha",  title: "పురాణ కథలు",          titleEn: "Sacred Stories",    icon: "📜" }
+  { id: "mantra", title: "మంత్రాలు, స్తోత్రాలు", titleEn: "Mantras & Stotras", icon: "ॐ", subtitle: "వేద మంత్రాలు, స్తోత్రాలు – తెలుగు అర్థంతో", subtitleEn: "Vedic mantras and stotras – with Telugu meaning" },
+  { id: "katha",  title: "పురాణ కథలు", titleEn: "Sacred Stories", icon: "📜", subtitle: "భక్తుల, దేవతల పవిత్ర కథలు", subtitleEn: "Sacred stories of devotees and gods" }
 ];
 
 window.MANANAM_LIBRARY = [
