@@ -235,7 +235,7 @@ body.dark .done{background:#2a2e5c}
     <input type="range" id="cpSeek" min="0" max="1000" value="0"><span class="cptime" id="cpTime">0:00</span></div>
   <div class="ytrow" id="cpSpeeds"></div>
 </div>
-<input type="file" id="chantFile" accept="audio/*,.mp3,.m4a,.wav" multiple hidden>
+<input type="file" id="chantFile" accept="audio/*,.mp3,.m4a,.wav,.zip,application/zip" multiple hidden>
 <div id="yt" class="hidden">
   <div class="ythead"><b id="ytTitle"></b><button id="ytClose" aria-label="close">✕</button></div>
   <div id="ytBox"><div id="ytFrame"></div></div>
@@ -855,21 +855,43 @@ $('ytClose').onclick = function(){
 function myKey(pid, part){ return 'chant/'+T.id+'/'+pid+'-'+part; }
 function myChant(pid, part){ return T ? recURL(myKey(pid, part)) : null; }
 function myCount(){ var n = 0; Object.keys(RECS).forEach(function(k){ if(T && k.indexOf('chant/'+T.id+'/') === 0) n++; }); return n; }
+function unzipStored(buf){   // reads a plain (uncompressed) zip: [{name, blob}]
+  var dv = new DataView(buf), out = [], i = 0;
+  while(i + 30 <= buf.byteLength && dv.getUint32(i, true) === 0x04034b50){
+    var method = dv.getUint16(i+8, true), size = dv.getUint32(i+18, true), nl = dv.getUint16(i+26, true), xl = dv.getUint16(i+28, true);
+    var name = new TextDecoder().decode(new Uint8Array(buf, i+30, nl)), start = i+30+nl+xl;
+    if(method === 0 && size) out.push({name: name.split('/').pop(), blob: new Blob([new Uint8Array(buf, start, size)], {type:'audio/mpeg'})});
+    i = start + size;
+  }
+  return out;
+}
 $('chantFile').onchange = function(){
-  var files = Array.prototype.slice.call(this.files || []), n = 0;
+  var input = this, files = Array.prototype.slice.call(this.files || []);
+  var zips = files.filter(function(f){ return /\.zip$/i.test(f.name); });
+  if(!zips.length) return addChantFiles(files, input);
+  var all = files.filter(function(f){ return !/\.zip$/i.test(f.name); }), left = zips.length;
+  zips.forEach(function(z){
+    var r = new FileReader();
+    r.onload = function(){ try{ unzipStored(r.result).forEach(function(e){ all.push({name: e.name, blob: e.blob}); }); }catch(e){} if(--left === 0) addChantFiles(all, input); };
+    r.onerror = function(){ if(--left === 0) addChantFiles(all, input); };
+    r.readAsArrayBuffer(z);
+  });
+};
+function addChantFiles(files, input){
+  var n = 0;
   var ids = T.parts.map(function(p){ return p.id; });
   files.forEach(function(f){
     var m = /^([a-z]+)[-_ ]?(full|\d{1,2}(?:-\d{1,2})?)\.(mp3|m4a|wav|aac)$/i.exec(f.name.trim());
     if(!m) return;
     var pid = m[1].toLowerCase(); if(pid === 'chamaka') pid = 'chamakam';
     if(ids.indexOf(pid) < 0) return;
-    saveRec(myKey(pid, m[2].toLowerCase().replace(/^0(\d)/, '$1').replace(/-0(\d)/, '-$1')), new Blob([f], {type: f.type || 'audio/mpeg'})); n++;
+    saveRec(myKey(pid, m[2].toLowerCase().replace(/^0(\d)/, '$1').replace(/-0(\d)/, '-$1')), f.blob || new Blob([f], {type: f.type || 'audio/mpeg'})); n++;
   });
   try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
-  this.value = '';
+  input.value = '';
   alert(n ? t('myAdded').replace('{n}', n) : t('myNone'));
   if(screen === 'contents') renderContents(); else if(screen === 'reader') renderStep();
-};
+}
 var CH = new Audio(); CH.preload = 'auto';
 function fmt(s){ s = Math.max(0, Math.floor(s || 0)); return Math.floor(s/60)+':'+('0'+s%60).slice(-2); }
 function cpUI(){
