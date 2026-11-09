@@ -337,7 +337,7 @@ function unitLabel(p){ return (p && tx(p,'unitLabel')) || tx(T,'unitLabel') || t
 function unitWord(p){ return (!p || single(p)) ? t('part') : unitLabel(p); }
 function unitTitle(p,u){ return single(p) ? tx(p,'name') : tx(p,'name')+', '+unitLabel(p)+' '+u.n; }
 function artFor(p,u){ return ART[p.id+'-'+u.n] || null; }
-var VERSION = 'v11';
+var VERSION = 'v12';
 function footer(){ return OWNER ? '<p class="foot">© '+OWNER.year+' '+esc(en() ? OWNER.en : OWNER.te)+' – '+t('copy')+' · '+VERSION+'</p>' : ''; }
 
 function show(which){
@@ -428,7 +428,7 @@ function renderContents(){
     p.units.forEach(function(u){
       var a = artFor(p,u), st = steps(u), rd = READ[ukey(p,u)] || {};
       var dots = st.map(function(_,i){ return '<i'+(rd[i+1]?' class="r"':'')+'></i>'; }).join('');
-      var title = single(p) ? tx(p,'name') : unitLabel(p)+' '+u.n;
+      var title = single(p) ? tx(p,'name') : unitLabel(p)+' '+u.n+(T.nameLines && u.name ? ' · '+u.name : '');
       h += '<button class="unit-row" data-p="'+esc(p.id)+'" data-u="'+u.n+'"'+(u.items.length?'':' disabled')+'>'+
            (a ? '<span class="thumb" aria-hidden="true">'+a.svg+'</span>' : '')+
            '<span class="t"><b>'+esc(title)+'</b><small>'+esc(a ? a.cap : (u.name || ''))+'</small><span class="dots">'+dots+'</span></span></button>';
@@ -463,7 +463,7 @@ function openUnit(pid, n, idx){
 function renderStep(){
   var p = cur.part, u = cur.unit, st = steps(u), item = st[cur.idx], a = artFor(p,u), w = unitWord(p);
   $('title').textContent = unitTitle(p,u);
-  $('where').textContent = item.kind === 'v' ? (tx(T,'itemLabel') || t('mantra'))+' '+item.v.n+' / '+u.items.length : t('summary');
+  $('where').textContent = item.kind === 'v' ? (tx(T,'itemLabel') || t('mantra'))+' '+item.v.n+(item.v.n <= u.items.length ? ' / '+u.items.length : '') : t('summary');
   $('count').textContent = (cur.idx+1)+' / '+st.length;
   $('slider').value = cur.idx+1;
   $('progBar').style.width = ((cur.idx+1)/st.length*100)+'%';
